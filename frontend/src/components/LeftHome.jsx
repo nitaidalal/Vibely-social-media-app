@@ -6,13 +6,14 @@ import { clearUserData } from "../redux/userSlice";
 import axios from "axios";
 import { useState } from "react";
 import {useNavigate} from 'react-router-dom';
+import Follow from './Resuable/Follow';
+import Loader from "./Loader";
 
 const LeftHome = () => {
   const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { userData } = useSelector((state) => state.user);
+    const { userData, loading } = useSelector((state) => state.user);
     const { suggestedUsers } = useSelector((state) => state.user);
-    const [followingStatus, setFollowingStatus] = useState({});
 
     const handleLogout = async () => {
       try {
@@ -27,21 +28,9 @@ const LeftHome = () => {
         console.error("Logout error:", error);
       }
     }
-
-    const handleFollow = async (userId) => {
-      try {
-        await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}/user/follow/${userId}`,
-          {},
-          { withCredentials: true }
-        );
-        setFollowingStatus((prev) => ({ ...prev, [userId]: true }));
-      } catch (error) {
-        console.error('Error following user:', error);
-      }
-    }
   return (
-    <div className="w-[25%] hidden lg:block border-r bg-dark-bg px-4 text-dark-text border-gray-700 h-screen overflow-y-auto fixed left-0 top-0">
+    <div className="w-[25%] hidden lg:block border-r bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950
+ px-4 text-dark-text border-gray-700 h-screen overflow-y-auto fixed left-0 top-0">
       <div className="flex  justify-between items-center h-25 ">
         <div className="flex">
           <img src="/logo.png" alt="Logo" className="h-12 w-12 " />
@@ -82,7 +71,9 @@ const LeftHome = () => {
       <div className="mt-4 pt-4  border-t border-gray-800">
         <h3 className="text-xl font-semibold mb-4">Suggested people</h3>
         <div className="flex  flex-col gap-4">
-          {suggestedUsers && suggestedUsers.length > 0 ? (
+          {loading? (
+            <div className=" h-36 flex justify-center items-center"> <Loader /></div>
+          ) : suggestedUsers && suggestedUsers.length > 0 ? (
             suggestedUsers.slice(0, 3).map((user) => (
               <div
                 key={user._id}
@@ -110,17 +101,7 @@ const LeftHome = () => {
                     <h4 className="text-md font-medium">{user.name}</h4>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleFollow(user._id)}
-                  disabled={followingStatus[user._id]}
-                  className={`px-3 cursor-pointer py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    followingStatus[user._id]
-                      ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                      : "bg-blue-600 text-white hover:bg-blue-700"
-                  }`}
-                >
-                  {followingStatus[user._id] ? "Following" : "Follow"}
-                </button>
+                <Follow userId={user._id} />
               </div>
             ))
           ) : (
