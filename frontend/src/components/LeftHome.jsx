@@ -34,7 +34,7 @@ const LeftHome = () => {
       <div className="flex  justify-between items-center h-25 ">
         <div className="flex">
           <img src="/logo.png" alt="Logo" className="h-12 w-12 " />
-          <span className="text-primary text-4xl font-bold ">ibogram</span>
+          <span className="text-primary text-4xl font-bold ">ynox</span>
         </div>
         <div>
           <CiHeart className="text-4xl" />
