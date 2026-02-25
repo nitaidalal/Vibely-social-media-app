@@ -6,7 +6,6 @@ import fs from "fs";
 export const uploadStory = async (req, res) => {
     let filePath = null;
     try {
-        const {mediaType} = req.body;
         const user = await User.findById(req.userId);
         if(user.story){
             await Story.findByIdAndDelete(user.story);
@@ -36,6 +35,9 @@ export const uploadStory = async (req, res) => {
                 ],
             });
             let mediaUrl = uploadResult.secure_url;
+
+            // Automatically determine mediaType from Cloudinary's resource_type
+            const mediaType = uploadResult.resource_type === "video" ? "video" : "image";
 
             // Delete temporary file if it exists
             if (filePath && fs.existsSync(filePath)) {
@@ -93,7 +95,7 @@ export const viewStory = async(req,res) => {
     }
 }
 
-export const getMyStory = async(req,res) => {
+export const getStoryByUsername = async(req,res) => {
     try {
         const username = req.params.username;
         const user = await User.findOne({username});
@@ -101,12 +103,26 @@ export const getMyStory = async(req,res) => {
             return res.status(404).json({message:"Story not found"});
         }
 
-        const story = await Story.findById(user.story).populate("author", "viewers");
+        const story = await Story.findById(user.story).populate([
+            { path: "author", select: "name username profileImage" },
+            { path: "viewers", select: "name username profileImage" }
+        ]);
 
         return res.status(200).json({story});
 
     } catch (error) {
         console.error("Get My Story Error:", error);
         res.status(500).json({message:error.message});
+    }
+}
+
+export const getAllStory = async(req,res) => {
+    try {
+        const stories = await Story.find().populate("author", "name username profileImage").sort({createdAt:-1});
+        return res.status(200).json({stories});        
+    } catch (error) {
+        console.error("Get All Stories Error:", error);
+        res.status(500).json({message:error.message});
+        
     }
 }
