@@ -10,13 +10,13 @@ import { setPosts } from '../redux/postSlice';
 import { setVibes } from '../redux/vibeSlice';
 import { setStories } from '../redux/storySlice';
 
-const UploadPost = () => {
+const UploadPost = ({ isStory = false }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { posts } = useSelector((state) => state.post);
   const { vibes } = useSelector((state) => state.vibe);
   const { stories } = useSelector((state) => state.story);
-  const [selectedType, setSelectedType] = useState(null);
+  const [selectedType, setSelectedType] = useState(isStory ? 'story' : null);
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [caption, setCaption] = useState('');
@@ -96,6 +96,9 @@ const UploadPost = () => {
     }
 
     const formData = new FormData();
+
+    //for story mediaType is determined in backend based on file type, so no need to send it from frontend
+    
     
     // Determine the field name based on selected type
     const fieldName = selectedType === 'vibe' ? 'video' : 'media';
