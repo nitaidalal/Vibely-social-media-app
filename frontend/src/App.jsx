@@ -13,10 +13,17 @@ import Vibes from './pages/Vibes'
 import Settings from './components/Settings'
 import Story from './components/Story'
 import getSuggestedUsers from './hooks/getSuggestedUsers'
+import { useEffect } from 'react'
 
 const App = () => {
 
   const {userData} = useSelector((state) => state.user);
+  const { theme } = useSelector((state) => state.theme);
+  
+  // Apply theme on mount and when it changes
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
   
   getSuggestedUsers();
   useGetCurrentUser();

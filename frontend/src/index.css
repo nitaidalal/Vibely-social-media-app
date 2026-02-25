@@ -1,12 +1,49 @@
 @import "tailwindcss";
 
+/* Light Theme (default) */
+:root {
+  --color-primary: #8B5CF6;
+  --color-accent: #EC4899;
+
+  --color-bg: #FFFFFF;
+  --color-surface: #F9FAFB;
+  --color-surface-hover: #F3F4F6;
+  --color-border: #E5E7EB;
+
+  --color-text-primary: #111827;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #9CA3AF;
+
+  --color-success: #22C55E;
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+  --color-primary: #8B5CF6;
+  --color-accent: #EC4899;
+
+  --color-bg: #0F0F14;
+  --color-surface: #1A1A23;
+  --color-surface-hover: #23232E;
+  --color-border: #2A2A35;
+
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #A1A1AA;
+  --color-text-muted: #71717A;
+
+  --color-success: #22C55E;
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
+}
 
 @theme {
   --color-primary: #8B5CF6;
   --color-accent: #EC4899;
 
   --color-bg: #0F0F14;
-  --color-surface: #1A1A23; /* cards, modals */
+  --color-surface: #1A1A23;
   --color-surface-hover: #23232E; 
   --color-border: #2A2A35;
 
@@ -19,7 +56,6 @@
   --color-warning: #F59E0B;
   --color-dark-bg: #0F0F14;
   --color-dark-text: #E5E5E5; 
-
 }
 
 @layer utilities {

@@ -7,11 +7,14 @@ import { useNavigate } from 'react-router-dom'
 import { IoPersonOutline, IoLockClosedOutline, IoNotificationsOutline, IoShieldCheckmarkOutline, IoHelpCircleOutline, IoInformationCircleOutline, IoBrushOutline, IoLogOutOutline, IoChevronForward, IoKeyOutline, IoMailOutline, IoGlobeOutline, IoMoonOutline, IoSunnyOutline } from 'react-icons/io5'
 import { MdPrivacyTip, MdReportProblem } from 'react-icons/md'
 import { FaInstagram } from 'react-icons/fa'
+import Navbar from './navbar'
+import { toggleTheme } from '../redux/themeSlice'
 
 const Settings = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { userData } = useSelector((state) => state.user);
+    const { theme } = useSelector((state) => state.theme);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     
     
@@ -33,8 +36,8 @@ const Settings = () => {
 
     const SettingsSection = ({ title, children }) => (
       <div className="mb-6">
-        <h2 className="text-gray-400 text-xs font-semibold px-2 mb-2 uppercase tracking-wider">{title}</h2>
-        <div className="bg-surface border border-gray-700 rounded-xl overflow-hidden">
+        <h2 className="text-text-muted text-xs font-semibold px-2 mb-2 uppercase tracking-wider">{title}</h2>
+        <div className="bg-surface border border-border rounded-xl overflow-hidden">
           {children}
         </div>
       </div>
@@ -43,32 +46,37 @@ const Settings = () => {
     const SettingsItem = ({ icon: Icon, title, subtitle, onClick, danger = false, showArrow = true }) => (
       <button
         onClick={onClick}
-        className={`w-full flex items-center gap-4 px-4 py-4 hover:bg-gray-800/50 transition-all duration-200 border-b border-gray-700/50 last:border-b-0 ${danger ? 'text-red-500' : 'text-white'}`}
+        className={`w-full flex items-center gap-4 px-4 py-4 transition-all duration-200 border-b border-border hover:bg-surface-hover ${
+          danger ? 'text-danger' : 'text-text-primary'
+        }`}
       >
-        <Icon className={`text-2xl flex-shrink-0 ${danger ? 'text-red-500' : 'text-gray-400'}`} />
+        <Icon className={`text-2xl shrink-0 ${
+          danger ? 'text-danger' : 'text-text-secondary'
+        }`} />
         <div className="flex-1 text-left">
-          <p className={`font-medium ${danger ? 'text-red-500' : 'text-white'}`}>{title}</p>
-          {subtitle && <p className="text-sm text-gray-400 mt-0.5">{subtitle}</p>}
+          <p className={`font-medium ${
+            danger ? 'text-danger' : 'text-text-primary'
+          }`}>{title}</p>
+          {subtitle && <p className="text-text-secondary text-sm mt-0.5">{subtitle}</p>}
         </div>
-        {showArrow && <IoChevronForward className="text-gray-500 text-lg flex-shrink-0" />}
+        {showArrow && <IoChevronForward className="text-text-muted text-lg shrink-0" />}
       </button>
-      
     );
 
   return (
-    <div className="w-full min-h-screen bg-dark-bg text-dark-text">
+    <div className="w-full min-h-screen bg-bg text-text-primary">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-dark-bg border-b border-gray-700">
+      <div className="sticky top-0 z-10 bg-bg border-b border-border">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-4">
           <button 
             onClick={() => navigate(-1)}
-            className="text-2xl cursor-pointer hover:scale-110 transition-transform"
+            className="text-text-primary text-2xl cursor-pointer hover:scale-110 transition-transform"
           >
             ←
           </button>
           <div>
-            <h1 className="text-xl font-semibold">Settings</h1>
-            <p className="text-sm text-gray-400">@{userData?.username}</p>
+            <h1 className="text-text-primary text-xl font-semibold">Settings</h1>
+            <p className="text-text-secondary text-sm">@{userData?.username}</p>
           </div>
         </div>
       </div>
@@ -139,10 +147,10 @@ const Settings = () => {
         {/* Display & Accessibility */}
         <SettingsSection title="Display & Accessibility">
           <SettingsItem
-            icon={IoBrushOutline}
+            icon={theme === 'dark' ? IoMoonOutline : IoSunnyOutline}
             title="Theme"
-            subtitle="Currently using Dark mode"
-            onClick={() => toast('Feature coming soon')}
+            subtitle={`Currently using ${theme === 'dark' ? 'Dark' : 'Light'} mode`}
+            onClick={() => dispatch(toggleTheme())}
           />
           <SettingsItem
             icon={IoGlobeOutline}
@@ -163,6 +171,7 @@ const Settings = () => {
           <SettingsItem
             icon={MdReportProblem}
             title="Report a Problem"
+            danger={true}
             subtitle="Let us know if something isn't working"
             onClick={() => toast('Feature coming soon')}
           />
@@ -193,7 +202,7 @@ const Settings = () => {
 
         {/* Logout Button */}
         <div className="mb-6">
-          <div className="bg-surface border border-gray-700 rounded-xl overflow-hidden">
+          <div className="bg-surface border border-border rounded-xl overflow-hidden">
             <SettingsItem
               icon={IoLogOutOutline}
               title="Log Out"
@@ -208,20 +217,20 @@ const Settings = () => {
       {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-surface border border-gray-700 rounded-2xl p-6 max-w-sm w-full">
+          <div className="bg-surface border border-border rounded-2xl p-6 max-w-sm w-full">
             <div className="flex items-center justify-center mb-4">
               <div className="bg-red-500/20 p-4 rounded-full">
-                <IoLogOutOutline className="text-4xl text-red-500" />
+                <IoLogOutOutline className="text-danger text-4xl" />
               </div>
             </div>
-            <h3 className="text-white text-xl font-bold text-center mb-2">Log Out?</h3>
-            <p className="text-gray-400 text-center mb-6">
+            <h3 className="text-text-primary text-xl font-bold text-center mb-2">Log Out?</h3>
+            <p className="text-text-secondary text-center mb-6">
               Are you sure you want to log out of your account?
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowLogoutConfirm(false)}
-                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-xl font-medium transition-all duration-200 hover:scale-105"
+                className="flex-1 bg-surface-hover text-text-primary py-3 px-4 rounded-xl font-medium transition-all duration-200 hover:scale-105"
               >
                 Cancel
               </button>
