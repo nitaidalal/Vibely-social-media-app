@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { setProfileData } from '../redux/userSlice';
@@ -11,6 +11,10 @@ import { IoMdSettings } from "react-icons/io";
 import { CiHeart } from "react-icons/ci";
 import Navbar from '../components/navbar';
 import Loader from '../components/Loader';
+import Follow from '../components/Resuable/Follow';
+import { BsBookmark } from "react-icons/bs";
+import Post from '../components/Post';
+
 
 const Profile = () => {
   const { username } = useParams();
@@ -18,6 +22,10 @@ const Profile = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('posts');
+  const [selectedPostIndex, setSelectedPostIndex] = useState(null);
+  const [selectedSource, setSelectedSource] = useState(null); // 'posts' | 'saved'
+  const listRef = useRef(null);
+  const selectedItemRef = useRef(null);
   const { profileData, userData } = useSelector((state) => state.user);
 
   const isOwnProfile = userData?.username === username;
@@ -27,6 +35,7 @@ const Profile = () => {
       setLoading(true);
       const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/profile/${username}`, { withCredentials: true });
       dispatch(setProfileData(response.data.user));
+      console.log("Profile data loaded:", response.data.user.savedPosts);
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to load profile data");
     } finally {
@@ -39,6 +48,25 @@ const Profile = () => {
       handleProfile();
     }
   }, [username]);
+
+  // Scroll the viewer so the clicked post starts in view
+  useEffect(() => {
+    if (selectedSource && selectedPostIndex !== null && selectedItemRef.current) {
+      selectedItemRef.current.scrollIntoView({ behavior: 'auto', block: 'start' });
+    }
+  }, [selectedSource, selectedPostIndex]);
+
+  const getActiveList = () => {
+    if (!profileData) return null;
+    if (selectedSource === 'posts') return profileData.posts || [];
+    if (selectedSource === 'saved') return profileData.savedPosts || [];
+    if (selectedSource === 'vibes') return profileData.vibes || [];
+    return null;
+  };
+
+  const handleSettingsClick = () => {
+    navigate('/settings');
+  }
 
   if (loading) {
     return (
@@ -60,7 +88,7 @@ const Profile = () => {
         </button>
         <h1 className="text-xl font-semibold">{profileData?.username}</h1>
         <button className="cursor-pointer text-2xl">
-          {isOwnProfile && <IoMdSettings />}
+          {isOwnProfile && <IoMdSettings onClick={handleSettingsClick} />}
         </button>
       </div>
 
@@ -131,9 +159,7 @@ const Profile = () => {
               </>
             ) : (
               <>
-                <button className="flex-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
-                  Follow
-                </button>
+                <Follow userId={profileData?._id} location="profile" onFollowChange={handleProfile} />
                 <button className="flex-1 cursor-pointer bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
                   Message
                 </button>
@@ -147,7 +173,7 @@ const Profile = () => {
           <div className="flex">
             <button
               onClick={() => setActiveTab("posts")}
-              className={`flex-1 py-3 flex items-center justify-center gap-2 border-t-2 ${
+              className={`flex-1 py-3 flex items-center justify-center gap-2 border-t-2 cursor-pointer ${
                 activeTab === "posts"
                   ? "border-white text-white"
                   : "border-transparent text-gray-400"
@@ -160,7 +186,7 @@ const Profile = () => {
             </button>
             <button
               onClick={() => setActiveTab("reels")}
-              className={`flex-1 py-3 flex items-center justify-center gap-2 border-t-2 ${
+              className={`flex-1 py-3 flex items-center justify-center gap-2 border-t-2 cursor-pointer ${
                 activeTab === "reels"
                   ? "border-white text-white"
                   : "border-transparent text-gray-400"
@@ -168,15 +194,29 @@ const Profile = () => {
             >
               <MdOutlineSlowMotionVideo className="text-2xl" />
               <span className="text-sm font-semibold hidden sm:inline">
-                REELS
+                VIBES
               </span>
             </button>
+            {isOwnProfile && (<button
+              onClick={() => setActiveTab("saved")}
+              className={`flex-1 py-3 flex items-center justify-center gap-2 border-t-2 cursor-pointer ${
+                activeTab === "saved"
+                  ? "border-white text-white"
+                  : "border-transparent text-gray-400"
+              } transition-colors`}
+            >
+              <BsBookmark className="text-xl" />
+              <span className="text-sm font-semibold hidden sm:inline">
+                SAVED
+              </span>
+            </button>
+            )}
           </div>
         </div>
 
         {/* Content Grid */}
         <div className="p-1">
-          {activeTab === "posts" ? (
+          {activeTab === "posts" && (
             <div>
               {profileData?.posts && profileData.posts.length > 0 ? (
                 <div className="grid grid-cols-3 gap-1">
@@ -184,15 +224,25 @@ const Profile = () => {
                   {profileData.posts.map((post, index) => (
                     <div
                       key={index}
-                      className="aspect-square bg-gray-800 cursor-pointer hover:opacity-75 transition-opacity flex items-center justify-center"
+                      className="aspect-square bg-gray-800 cursor-pointer hover:opacity-75 transition-opacity flex items-center justify-center overflow-hidden relative"
+                      onClick={() => {
+                        setSelectedSource('posts');
+                        setSelectedPostIndex(index);
+                      }}
                     >
-                      <div className="w-full h-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+                      {post.mediaType === "video" ? (
+                        <video
+                          src={post.mediaUrl}
+                          className="object-cover w-full h-full"
+                          controls
+                        />
+                      ) : (
                         <img
                           src={post.mediaUrl}
                           alt={`Post ${index + 1}`}
                           className="object-cover w-full h-full"
                         />
-                      </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -206,17 +256,115 @@ const Profile = () => {
                 </div>
               )}
             </div>
-          ) : (
+          )}
+          {activeTab === "reels" && (
             <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-              <MdOutlineSlowMotionVideo className="text-6xl mb-4" />
-              <p className="text-xl font-semibold mb-2">No Reels Yet</p>
-              <p className="text-sm">
-                When you share reels, they'll appear here.
-              </p>
+              {profileData?.vibes && profileData.vibes.length > 0 ? (
+                <div className="grid grid-cols-3 gap-1">
+                  {profileData.vibes.map((vibe, index) => (
+                    <div
+                      key={index}
+                      onClick={() => {
+                        setSelectedPostIndex(index);
+                        setSelectedSource("vibes")
+                      }}
+                      className="aspect-square bg-gray-800 cursor-pointer hover:opacity-75 transition-opacity flex items-center justify-center overflow-hidden relative"
+                    >
+                      <video
+                        src={vibe.mediaUrl}
+                        className="object-cover w-full h-full"
+                        controls
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                  <MdOutlineSlowMotionVideo className="text-6xl mb-4" />
+                  <p className="text-xl font-semibold mb-2">No Reels Yet</p>
+                  <p className="text-sm">
+                    When you share reels, they'll appear here.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+          {activeTab === "saved" && (
+            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+              {profileData?.savedPosts && profileData.savedPosts.length > 0 ? (
+                <div className="grid grid-cols-3 gap-1">
+                  {profileData.savedPosts.map((post, index) => (
+                    <div
+                      key={index}
+                      className="aspect-square bg-gray-800 cursor-pointer hover:opacity-75 transition-opacity flex items-center justify-center overflow-hidden relative"
+                      onClick={() => {
+                        setSelectedSource('saved');
+                        setSelectedPostIndex(index);
+                      }}
+                    >
+                      {post.mediaType === "video" ? (
+                        <video
+                          src={post.mediaUrl}
+                          className="object-cover w-full h-full"
+                          controls
+                        />
+                      ) : (
+                        <img
+                          src={post.mediaUrl}
+                          alt={`Post ${index + 1}`}
+                          className="object-cover w-full h-full"
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                  <BsBookmark className="text-6xl mb-4" />
+                  <p className="text-xl font-semibold mb-2">No Saved Posts Yet</p>
+                  <p className="text-sm">
+                    When you save posts, they'll appear here.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
+      {/* Posts Viewer Modal (Instagram-style) */}
+      {selectedSource && selectedPostIndex !== null && getActiveList() && (
+        <div
+          className="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center px-2"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setSelectedSource(null);
+              setSelectedPostIndex(null);
+            }
+          }}
+        >
+          <div className="max-w-2xl w-full h-[90vh] relative" ref={listRef}>
+            <button
+              onClick={() => {
+                setSelectedSource(null);
+                setSelectedPostIndex(null);
+              }}
+              className="absolute -top-10 right-0 text-3xl text-gray-300 hover:text-white cursor-pointer"
+            >
+              ×
+            </button>
+            <div className="h-full overflow-y-auto space-y-6 pt-2 pb-4">
+              {getActiveList().map((post, idx) => (
+                <div
+                  key={post._id || idx}
+                  ref={idx === selectedPostIndex ? selectedItemRef : null}
+                >
+                  <Post post={post} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       {/* Navbar */}
       <div className="lg:hidden flex items-center justify-center">
         <Navbar />
