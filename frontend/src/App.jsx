@@ -7,14 +7,19 @@ import { Toaster } from 'react-hot-toast'
 import ForgotPassword from './pages/ForgotPassword'
 import Home from './pages/Home'
 import { useSelector } from 'react-redux'
-import getSuggestedUsers from './hooks/getSuggestedUsers'
+import useGetCurrentUser from './hooks/useGetCurrentUser'
 import UploadPost from './pages/UploadPost'
 import Vibes from './pages/Vibes'
+import Settings from './components/Settings'
+import Story from './components/Story'
+import getSuggestedUsers from './hooks/getSuggestedUsers'
 
 const App = () => {
 
   const {userData} = useSelector((state) => state.user);
+  
   getSuggestedUsers();
+  useGetCurrentUser();
   return (
     <>
       <Toaster
@@ -79,9 +84,12 @@ const App = () => {
         <Route path="/" element={userData ? <Home /> : <Navigate to="/signin" />} />
         <Route path='/profile/:username' element={userData ? <Profile /> : <Navigate to="/signin" />} />
         <Route path='/upload' element={userData ? <UploadPost /> : <Navigate to="/signin" />} />
+        <Route path='/upload-story' element={userData ? <UploadPost isStory={true} /> : <Navigate to="/signin" />} />
+        <Route path='/story/:username' element={userData ? <Story /> : <Navigate to="/signin" />} />
         <Route path='/edit-profile' element={userData ? <EditProfile /> : <Navigate to="/signin" />} />
         <Route path='/vibes' element={userData ? <Vibes /> : <Navigate to="/signin" />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path='/settings' element={userData ? <Settings /> : <Navigate to="/signin" />} />
       </Routes>
     </>
   );
