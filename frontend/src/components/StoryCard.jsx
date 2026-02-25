@@ -2,7 +2,7 @@ import React from 'react'
 import { FaUserLarge } from 'react-icons/fa6'
 import { useNavigate } from 'react-router-dom'
 
-const StoryCard = ({profileImage, userName, ownStory=false, hasStory=false, username, storyId}) => {
+const StoryCard = ({profileImage, userName, ownStory=false, hasStory=false, username, isViewed=false}) => {
     const navigate = useNavigate();
     
     const handleClick = () => {
@@ -15,11 +15,16 @@ const StoryCard = ({profileImage, userName, ownStory=false, hasStory=false, user
       }
     };
     
+    // Determine border style based on viewed status
+    const borderClass = hasStory 
+      ? (isViewed ? 'bg-gray-600' : 'bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600')
+      : 'bg-gray-700';
+    
 return (
   <div className="flex flex-col w-[80px] md:w-[100px]  items-center  ">
     <div
     onClick={handleClick}
-     className={`relative p-[4px] rounded-full cursor-pointer ${hasStory ? 'bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600' : 'bg-gray-700'}`}>
+     className={`relative p-[4px] rounded-full cursor-pointer ${borderClass}`}>
       <div className=" h-16 w-16 md:h-20 md:w-20 object-cover overflow-hidden rounded-full flex justify-center items-center bg-gray-500">
         {profileImage ? (
           <img

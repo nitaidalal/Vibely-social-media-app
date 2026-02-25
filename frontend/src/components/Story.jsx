@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { IoClose, IoChevronBack, IoChevronForward } from 'react-icons/io5';
@@ -7,10 +7,12 @@ import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { HiDotsVertical } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import moment from 'moment';
+import { setStories } from '../redux/storySlice';
 
 const Story = () => {
   const { username } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { userData } = useSelector((state) => state.user);
   const { stories } = useSelector((state) => state.story);
   
@@ -58,6 +60,12 @@ const Story = () => {
       );
       
       setCurrentStory(response.data.story);
+      
+      // Update the story in Redux with updated viewers list
+      const updatedStories = stories.map(story => 
+        story._id === response.data.story._id ? response.data.story : story
+      );
+      dispatch(setStories(updatedStories));
     } catch (error) {
       console.error('Error fetching story:', error.response?.data || error.message);
       toast.error(error.response?.data?.message || 'Story not found or expired');
@@ -139,7 +147,7 @@ const Story = () => {
       <div className="absolute top-0 left-0 right-0 z-10 p-2">
         <div className="w-full h-1 bg-gray-600 rounded-full overflow-hidden">
           <div 
-            className="h-full bg-white transition-all duration-100"
+            className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-100"
             style={{ width: `${progress}%` }}
           />
         </div>

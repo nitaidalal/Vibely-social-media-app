@@ -100,16 +100,24 @@ useEffect(() => {
         ) : stories && stories.length > 0 ? (
           stories
             .filter((story) => story.author?._id !== userData?._id)
-            .map((story) => (
-            <StoryCard 
-              key={story._id} 
-              profileImage={story.author?.profileImage}
-              userName={story.author?.username || story.author?.name}
-              hasStory={true}
-              username={story.author?.username}
-              storyId={story._id}
-            />
-          ))
+            .map((story) => {
+              // Check if current user has viewed this story
+              const isViewed = story.viewers?.some(viewer => 
+                typeof viewer === 'string' ? viewer === userData?._id : viewer._id === userData?._id
+              );
+              
+              return (
+                <StoryCard 
+                  key={story._id} 
+                  profileImage={story.author?.profileImage}
+                  userName={story.author?.username || story.author?.name}
+                  hasStory={true}
+                  username={story.author?.username}
+                  storyId={story._id}
+                  isViewed={isViewed}
+                />
+              );
+            })
         ) : (
           <div className="text-center py-4 text-text-secondary w-full">
             No stories yet

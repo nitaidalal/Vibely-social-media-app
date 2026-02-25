@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setPosts } from '../redux/postSlice';
 import { setVibes } from '../redux/vibeSlice';
 import { setStories } from '../redux/storySlice';
+import { setUserData } from '../redux/userSlice';
 
 const UploadPost = ({ isStory = false }) => {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ const UploadPost = ({ isStory = false }) => {
   const { posts } = useSelector((state) => state.post);
   const { vibes } = useSelector((state) => state.vibe);
   const { stories } = useSelector((state) => state.story);
+  const { userData } = useSelector((state) => state.user);
   const [selectedType, setSelectedType] = useState(isStory ? 'story' : null);
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -135,6 +137,8 @@ const UploadPost = ({ isStory = false }) => {
         dispatch(setVibes([response.data.vibe, ...vibes]));
       } else if (selectedType === 'story' && response.data.story) {
         dispatch(setStories([response.data.story, ...stories]));
+        // Update userData with new story reference
+        dispatch(setUserData({ ...userData, story: response.data.story._id }));
       }
       
       toast.success(response.data.message || `${selectedType} uploaded successfully!`);
