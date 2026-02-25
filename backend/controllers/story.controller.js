@@ -148,3 +148,32 @@ export const getAllStory = async(req,res) => {
         
     }
 }
+
+export const deleteStory = async(req,res) => {
+    try {
+        const {storyId} = req.params;
+        
+        // Find the story
+        const story = await Story.findById(storyId);
+        
+        if(!story){
+            return res.status(404).json({message:"Story not found"});
+        }
+        
+        // Check if the user is the owner
+        if(story.author.toString() !== req.userId){
+            return res.status(403).json({message:"You are not authorized to delete this story"});
+        }
+        
+        // Delete the story
+        await Story.findByIdAndDelete(storyId);
+        
+        // Remove story reference from user
+        await User.findByIdAndUpdate(req.userId, { $unset: { story: "" } });
+        
+        return res.status(200).json({message:"Story deleted successfully"});
+    } catch (error) {
+        console.error("Delete Story Error:", error);
+        res.status(500).json({message:error.message});
+    }
+}
