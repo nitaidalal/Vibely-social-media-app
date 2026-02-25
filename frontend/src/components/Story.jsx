@@ -3,11 +3,12 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { IoClose, IoChevronBack, IoChevronForward } from 'react-icons/io5';
-import { FaHeart, FaRegHeart } from 'react-icons/fa';
+import { FaHeart, FaRegHeart, FaTrash } from 'react-icons/fa';
 import { HiDotsVertical } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import moment from 'moment';
 import { setStories } from '../redux/storySlice';
+import { setUserData } from '../redux/userSlice';
 
 const Story = () => {
   const { username } = useParams();
@@ -21,6 +22,7 @@ const Story = () => {
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [showViewers, setShowViewers] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const progressInterval = useRef(null);
   const videoRef = useRef(null);
 
@@ -88,7 +90,8 @@ const Story = () => {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(progressInterval.current);
-          handleNext();
+          // Schedule navigation to next story after state update
+          setTimeout(() => handleNext(), 0);
           return 100;
         }
         return prev + increment;
@@ -129,6 +132,44 @@ const Story = () => {
     }
   };
 
+  const handleDeleteStory = async () => {
+    try {
+      
+      await axios.delete(
+        `${import.meta.env.VITE_BACKEND_URL}/story/delete/${currentStory._id}`,
+        { withCredentials: true }
+      );
+      
+      // Update Redux store - remove deleted story
+      const updatedStories = stories.filter(story => story._id !== currentStory._id);
+      dispatch(setStories(updatedStories));
+      
+      // Update userData - remove story reference
+      dispatch(setUserData({ ...userData, story: null }));
+      
+      toast.success('Story deleted successfully');
+      navigate('/');
+    } catch (error) {
+      console.error('Error deleting story:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete story');
+      
+      // Resume story on error
+      setShowDeleteModal(false);
+      setIsPaused(false);
+      if (videoRef.current && currentStory.mediaType === 'video') {
+        videoRef.current.play();
+      }
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+    setIsPaused(false);
+    if (videoRef.current && currentStory.mediaType === 'video') {
+      videoRef.current.play();
+    }
+  };
+
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
@@ -146,8 +187,8 @@ const Story = () => {
       {/* Progress Bar */}
       <div className="absolute top-0 left-0 right-0 z-10 p-2">
         <div className="w-full h-1 bg-gray-600 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-100"
+          <div
+            className="h-full bg-gradient-to-r from-pink-500 to-fuchsia-500 transition-all duration-100"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -157,7 +198,7 @@ const Story = () => {
       <div className="absolute top-4 left-0 right-0 z-10 px-4 flex items-center justify-between text-white">
         <div className="flex items-center gap-3">
           <img
-            src={currentStory.author?.profileImage || '/default-avatar.png'}
+            src={currentStory.author?.profileImage || "/default-avatar.png"}
             alt={currentStory.author?.name}
             className="w-10 h-10 rounded-full border-2 border-white object-cover"
           />
@@ -168,17 +209,32 @@ const Story = () => {
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3">
           {isOwnStory && (
-            <button 
-              onClick={() => setShowViewers(!showViewers)}
-              className="text-sm"
-            >
-              👁️ {currentStory.viewers?.length || 0}
-            </button>
+            <>
+              <button
+                onClick={() => setShowViewers(!showViewers)}
+                className="text-sm hover:bg-white/10 px-3 py-1 rounded-full transition-colors"
+              >
+                👁️ {currentStory.viewers?.length || 0}
+              </button>
+              <button
+                onClick={() => {
+                  setIsPaused(true);
+                  if (videoRef.current) {
+                    videoRef.current.pause();
+                  }
+                  setShowDeleteModal(true);
+                }}
+                className="hover:bg-red-500/20 p-2 rounded-full transition-colors"
+                title="Delete story"
+              >
+                <FaTrash className="text-red-500 text-lg" />
+              </button>
+            </>
           )}
-          <button onClick={handleClose}>
+          <button onClick={handleClose} className="hover:bg-white/10 p-2 rounded-full transition-colors">
             <IoClose className="text-3xl" />
           </button>
         </div>
@@ -205,11 +261,11 @@ const Story = () => {
       )}
 
       {/* Story Content */}
-      <div 
-        className="relative w-full max-w-lg h-full flex items-center justify-center"
+      <div
+        className="relative w-full max-w-lg h-full bg-gray-900 flex items-center justify-center"
         onClick={handlePauseResume}
       >
-        {currentStory.mediaType === 'image' ? (
+        {currentStory.mediaType === "image" ? (
           <img
             src={currentStory.mediaUrl}
             alt="Story"
@@ -239,25 +295,51 @@ const Story = () => {
                 <IoClose className="text-white text-2xl" />
               </button>
             </div>
-            
+
             <div className="space-y-3">
               {currentStory.viewers && currentStory.viewers.length > 0 ? (
                 currentStory.viewers.map((viewer, index) => (
                   <div key={index} className="flex items-center gap-3">
                     <img
-                      src={viewer.profileImage || '/default-avatar.png'}
+                      src={viewer.profileImage || "/default-avatar.png"}
                       alt={viewer.name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
                     <div>
                       <p className="text-white font-medium">{viewer.name}</p>
-                      <p className="text-gray-400 text-sm">@{viewer.username}</p>
+                      <p className="text-gray-400 text-sm">
+                        @{viewer.username}
+                      </p>
                     </div>
                   </div>
                 ))
               ) : (
                 <p className="text-gray-400 text-center py-4">No viewers yet</p>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-30 flex items-center justify-center">
+          <div className="bg-gray-900 rounded-2xl p-6 max-w-sm mx-4">
+            <h3 className="text-white text-xl font-semibold mb-3">Delete Story?</h3>
+            <p className="text-gray-400 mb-6">Are you sure you want to delete this story? This action cannot be undone.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleCancelDelete}
+                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteStory}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition-colors"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>
