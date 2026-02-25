@@ -69,31 +69,35 @@ export const uploadStory = async (req, res) => {
 }
 
 // View a story
-export const viewStory = async(req,res) => {
-    try {
-        const {storyId} = req.params;
-        const story = await Story.findById(storyId);
+// export const viewStory = async(req,res) => {
+//     try {
+//         const {storyId} = req.params;
+//         console.log("Attempting to view story with ID:", storyId);
+        
+//         const story = await Story.findById(storyId);
+//         console.log("Story found:", story ? "Yes" : "No");
 
-        if(!story){
-            return res.status(404).json({message:"Story not found"});
-        }
+//         if(!story){
+//             return res.status(404).json({message:"Story not found or expired"});
+//         }
 
-        const viewersIds = story.viewers.map(viewer => viewer.toString()); // Convert ObjectIds to strings for comparison
-        if(!viewersIds.includes(req.userId)){
-            story.viewers.push(req.userId);
-            await story.save();
-        }
+//         const viewersIds = story.viewers.map(viewer => viewer.toString());
+//         if(!viewersIds.includes(req.userId)){
+//             story.viewers.push(req.userId);
+//             await story.save();
+//         }
 
-        const populatedStory = await Story.findById(storyId).populate([
-            { path: "author", select: "name username profileImage" },
-            { path: "viewers", select: "name username profileImage" }
-        ]);
-        return res.status(200).json({story: populatedStory});
-    } catch (error) {
-        console.error("View Story Error:", error);
-        res.status(500).json({message:error.message});
-    }
-}
+//         const populatedStory = await Story.findById(storyId).populate([
+//             { path: "author", select: "name username profileImage" },
+//             { path: "viewers", select: "name username profileImage" }
+//         ]);
+//         return res.status(200).json({story: populatedStory});
+//     } catch (error) {
+//         console.error("View Story Error:", error);
+//         console.error("Story ID that failed:", req.params.storyId);
+//         res.status(500).json({message:error.message});
+//     }
+// }
 
 export const getStoryByUsername = async(req,res) => {
     try {
@@ -103,12 +107,30 @@ export const getStoryByUsername = async(req,res) => {
             return res.status(404).json({message:"Story not found"});
         }
 
-        const story = await Story.findById(user.story).populate([
+        const story = await Story.findById(user.story);
+
+        // Handle expired story (TTL deleted it but reference remains)
+        if(!story){
+            return res.status(404).json({message:"Story not found or expired"});
+        }
+
+        // Track viewer if not the owner
+        const isOwner = story.author.toString() === req.userId;
+        if(!isOwner){
+            const viewersIds = story.viewers.map(viewer => viewer.toString());
+            if(!viewersIds.includes(req.userId)){
+                story.viewers.push(req.userId);
+                await story.save();
+            }
+        }
+
+        // Populate and return story with viewers
+        const populatedStory = await Story.findById(story._id).populate([
             { path: "author", select: "name username profileImage" },
             { path: "viewers", select: "name username profileImage" }
         ]);
 
-        return res.status(200).json({story});
+        return res.status(200).json({story: populatedStory});
 
     } catch (error) {
         console.error("Get My Story Error:", error);
