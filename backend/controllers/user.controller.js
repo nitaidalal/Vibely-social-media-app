@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import cloudinary from "../config/cloudinary.js";
+import bcrypt from "bcryptjs";
 
 export const getCurrentUser = async (req,res) => {
     try {
@@ -132,5 +133,34 @@ export const followUser = async (req, res) => {
     } catch (error) {
         console.error("Follow User Error:", error);
         return res.status(500).json({ message: "Follow user error", error });
+    }
+}
+
+export const changePassword = async(req,res)=>{
+    try {
+        const {currentPassword, newPassword} = req.body;
+        const currentUserId = req.userId;
+
+        //find user 
+        const user = await User.findById(currentUserId);
+        if(!user){
+            return res.status(404).json({message:"You are unauthticated"});
+        }
+
+        //check currentPassword
+        const isValidCurrentPassword = await bcrypt.compare(currentPassword, user.password);
+        console.log(isValidCurrentPassword)
+
+        if(!isValidCurrentPassword){
+            return res.status(400).json({message:"You entered wrong current password"});
+        }
+
+        const newHashedPassword = await bcrypt.hash(newPassword,10);
+        user.password = newHashedPassword;
+        await user.save();
+        res.status(200).json({message:"Password changed successfully"});
+    } catch (error) {
+        console.log("change password error",error.message);
+        res.status(500).json({message:"Error in changing password"})
     }
 }
