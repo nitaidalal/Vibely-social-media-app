@@ -179,7 +179,7 @@ const Post = ({ post }) => {
           onClick={() => navigate(`/profile/${post?.author?.username}`)}
           className="flex items-center gap-3 cursor-pointer"
         >
-          <div className="h-11 w-11 rounded-full overflow-hidden border-2 border-gradient-to-r from-purple-500 to-pink-500 p-0.5 bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
+          <div className="h-11 w-11 rounded-full overflow-hidden p-0.5   bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
             <div className="h-full w-full rounded-full bg-gray-800 flex items-center justify-center overflow-hidden">
               {post?.author?.profileImage ? (
                 <img
