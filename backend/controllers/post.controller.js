@@ -111,7 +111,7 @@ export const getAllPosts = async (req, res) => {
 
 export const deletePost = async (req, res) => {
     try {
-        const postId = req.params.postId;
+        const postId = req.body;
         const userId = req.userId;
         const post = await Post.findById(postId);
 
