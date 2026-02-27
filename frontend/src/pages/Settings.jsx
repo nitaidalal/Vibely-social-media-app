@@ -14,7 +14,6 @@ import {
   IoMoonOutline, IoSunnyOutline 
 } from 'react-icons/io5'
 import { MdPrivacyTip, MdReportProblem } from 'react-icons/md'
-import { FaInstagram } from 'react-icons/fa'
 
 // Components
 import SettingsSection from '../components/settings/SettingsSection'
@@ -81,12 +80,6 @@ const Settings = () => {
             subtitle="Update your password"
             onClick={() => setShowPasswordDialogue(true)}
           />
-          <SettingsItem
-            icon={IoMailOutline}
-            title="Email Address"
-            subtitle={userData?.email}
-            onClick={() => toast("Feature coming soon")}
-          />
         </SettingsSection>
 
         {/* Privacy & Security Section */}
@@ -112,7 +105,7 @@ const Settings = () => {
         </SettingsSection>
 
         {/* Notifications Section */}
-        <SettingsSection title="Notifications">
+        {/* <SettingsSection title="Notifications">
           <SettingsItem
             icon={IoNotificationsOutline}
             title="Push Notifications"
@@ -125,7 +118,7 @@ const Settings = () => {
             subtitle="Control email updates"
             onClick={() => toast("Feature coming soon")}
           />
-        </SettingsSection>
+        </SettingsSection> */}
 
         {/* Display & Accessibility */}
         <SettingsSection title="Display & Accessibility">
@@ -174,13 +167,7 @@ const Settings = () => {
             subtitle="How we handle your data"
             onClick={() => toast("Feature coming soon")}
           />
-          <SettingsItem
-            icon={FaInstagram}
-            title="App Version"
-            subtitle="1.0.0"
-            onClick={() => {}}
-            showArrow={false}
-          />
+          
         </SettingsSection>
 
         {/* Logout Button */}
