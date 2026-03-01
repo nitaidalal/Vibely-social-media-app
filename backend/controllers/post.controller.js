@@ -111,16 +111,39 @@ export const getAllPosts = async (req, res) => {
 
 export const deletePost = async (req, res) => {
     try {
-        const postId = req.body;
+        const postId = req.params.postId;
+        console.log("Delete Post Request for ID:", postId);
         const userId = req.userId;
         const post = await Post.findById(postId);
 
         if (!post) {
             return res.status(404).json({ message: "Post not found" });
         }
+        console.log("Post found:", post);
+        
         if (post.author.toString() !== userId) {
             return res.status(403).json({ message: "Unauthorized to delete this post" });
         }
+
+        // Extract public_id from Cloudinary URL to delete the media
+        if (post.mediaUrl) {
+            try {
+                const urlParts = post.mediaUrl.split('/');
+                const publicIdWithExtension = urlParts.slice(-2).join('/'); // Gets "vibogram/posts/filename.ext"
+                const publicId = publicIdWithExtension.split('.')[0]; // Remove extension
+                
+                // Delete from Cloudinary based on media type
+                await cloudinary.uploader.destroy(publicId, {
+                    resource_type: post.mediaType === 'video' ? 'video' : 'image'
+                });
+                console.log("Media deleted from Cloudinary:", publicId);
+            } catch (cloudinaryError) {
+                console.log("Cloudinary deletion warning:", cloudinaryError.message);
+                // Continue with post deletion even if Cloudinary deletion fails
+            }
+        }
+
+        // Delete post from database
         await Post.findByIdAndDelete(postId);
 
         // Remove post reference from user's posts array
@@ -207,5 +230,43 @@ export const savedPost = async (req,res) => {
     } catch (error) {
         console.error("Save Post Error:", error);
         return res.status(500).json({message:"Save Post error", error} );
+    }
+}
+
+export const reportPost = async (req, res) => {
+    try {
+        const postId = req.params.postId;
+        const userId = req.userId;
+        const { reason, description } = req.body;
+
+        if (!reason) {
+            return res.status(400).json({ message: "Report reason is required" });
+        }
+
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        // Prevent reporting own post
+        if (post.author.toString() === userId) {
+            return res.status(403).json({ message: "You cannot report your own post" });
+        }
+
+        // Prevent duplicate reports from the same user
+        const alreadyReported = post.reports.some(
+            (r) => r.reportedBy.toString() === userId
+        );
+        if (alreadyReported) {
+            return res.status(409).json({ message: "You have already reported this post" });
+        }
+
+        post.reports.push({ reportedBy: userId, reason, description: description || "" });
+        await post.save();
+
+        return res.status(200).json({ message: "Post reported successfully" });
+    } catch (error) {
+        console.error("Report Post Error:", error);
+        return res.status(500).json({ message: "Failed to report post", error: error.message });
     }
 }
