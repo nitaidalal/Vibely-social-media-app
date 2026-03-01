@@ -9,13 +9,20 @@ import { BsBookmark } from "react-icons/bs"
 import { BsBookmarkFill } from "react-icons/bs"
 import { BsThreeDots } from "react-icons/bs"
 import { useDispatch, useSelector } from 'react-redux'
-import { likePost, addComment } from '../redux/postSlice'
+import { likePost, addComment, removePost } from '../redux/postSlice'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 import Follow from './Resuable/Follow'
 import { motion, AnimatePresence } from 'framer-motion'
+
 import moment from 'moment'
+import { AiOutlineEdit } from 'react-icons/ai'
+import { FaTrash } from 'react-icons/fa'
+import { MdInfo, MdReport } from 'react-icons/md'
+import { MdReportProblem } from 'react-icons/md'
+import ReportPost from './report/ReportPost'
+
 
 const Post = ({ post }) => {
   const dispatch = useDispatch();
@@ -30,6 +37,12 @@ const Post = ({ post }) => {
   const [comment, setComment] = useState('')
   const [comments, setComments] = useState([])
   const [showHeartAnimation, setShowHeartAnimation] = useState(false)
+  const [clickThreedots, setClickThreeDots] = useState(false)
+  const isOwnPost = post?.author?._id === userData?._id;
+  const [showReportModal, setShowReportModal] = useState(false)
+  
+
+  
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -67,9 +80,9 @@ const Post = ({ post }) => {
     }
   }, [post, userData]);
 
-  // Lock body scroll when comment modal is open
+  // Lock body scroll when  modal is open
   useEffect(() => {
-    if (showComments) {
+    if (showComments || clickThreedots) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -77,7 +90,7 @@ const Post = ({ post }) => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showComments]);
+  }, [showComments, clickThreedots]);
 
   const handleLike = async () => {
     try {
@@ -171,16 +184,46 @@ const Post = ({ post }) => {
     }
   }
 
+  const handleEditPost = (postId) => {
+    try {
+      navigate(`/edit-post/${postId}`);
+    } catch (error) {
+      console.error('Error navigating to edit post:', error);
+    }
+  }
+
+  const handleDeletePost = async (postId) => {
+    try {
+      console.log("Attempting to delete post with ID:", postId);
+      const response = await axios.delete(
+        `${import.meta.env.VITE_BACKEND_URL}/posts/delete/${postId}`,
+        { withCredentials: true }
+      );
+      
+      // Update Redux store
+      dispatch(removePost(postId));
+
+      toast.success(response.data.message || 'Post deleted successfully');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete post');
+    }
+    finally {
+      setClickThreeDots(false);
+    }
+  }
+
   return (
-    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl hover:scale-[1.01] transition-all duration-200 overflow-hidden shadow-2xl border border-gray-700 mb-6 hover:shadow-purple-900/30 transition-all duration-300">
+    <div className="bg-surface text-text-primary rounded-2xl hover:scale-[1.01] transition-all duration-200 overflow-hidden shadow-lg border border-border mb-6 hover:shadow-xl">
       {/* Post Header */}
-      <div className="flex items-center justify-between px-4 py-4 bg-gradient-to-r from-purple-900/20 to-pink-900/20 backdrop-blur-sm">
+      <div
+        className="flex items-center justify-between px-4 py-4 backdrop-blur-sm border-b border-border bg-linear-to-r from-purple-500/10 to-pink-500/10"
+      >
         <div
           onClick={() => navigate(`/profile/${post?.author?.username}`)}
           className="flex items-center gap-3 cursor-pointer"
         >
-          <div className="h-11 w-11 rounded-full overflow-hidden p-0.5   bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
-            <div className="h-full w-full rounded-full bg-gray-800 flex items-center justify-center overflow-hidden">
+          <div className="h-11 w-11 rounded-full overflow-hidden p-0.5 bg-linear-to-r from-purple-500 to-pink-500 shadow-lg">
+            <div className="h-full w-full rounded-full bg-surface flex items-center justify-center overflow-hidden">
               {post?.author?.profileImage ? (
                 <img
                   src={post.author.profileImage}
@@ -188,21 +231,24 @@ const Post = ({ post }) => {
                   className="object-cover h-full w-full"
                 />
               ) : (
-                <FaUserLarge className="text-white text-lg" />
+                <FaUserLarge className="text-text-secondary text-lg" />
               )}
             </div>
           </div>
           <div>
-            <p className="font-bold text-sm text-white">
+            <p className="font-bold text-sm text-text-primary">
               {post?.author?.username || "username"}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {post?.author?._id !== userData?._id && (
+          {!isOwnPost && (
             <Follow userId={post?.author?._id} />
           )}
-          <button className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-gray-700 rounded-full">
+          <button
+            onClick={() => setClickThreeDots(true)}
+            className="cursor-pointer text-text-secondary hover:text-text-primary transition-colors p-2 hover:bg-surface-hover rounded-full"
+          >
             <BsThreeDots className="text-xl" />
           </button>
         </div>
@@ -211,7 +257,8 @@ const Post = ({ post }) => {
       {/* Post Media */}
       <div
         onDoubleClick={handleDoubleClick}
-        className="w-full bg-black relative cursor-pointer select-none group"
+        className="w-full relative cursor-pointer select-none group bg-black/40"
+  
       >
         {post?.mediaType === "video" ? (
           <video
@@ -221,13 +268,13 @@ const Post = ({ post }) => {
             // muted
             loop
             // autoPlay={true}
-            className="w-full max-h-[600px] object-contain"
+            className="w-full max-h-150 object-contain"
           />
         ) : (
           <img
             src={post?.mediaUrl || "/placeholder-image.jpg"}
             alt="Post"
-            className="w-full max-h-[600px] object-contain  duration-300"
+            className="w-full max-h-150 object-contain  duration-300"
           />
         )}
 
@@ -257,10 +304,10 @@ const Post = ({ post }) => {
                 {isLiked ? (
                   <FaHeart className="text-red-500 text-2xl drop-shadow-lg animate-pulse" />
                 ) : (
-                  <CiHeart className="text-2xl group-hover:text-red-400 transition-colors" />
+                  <CiHeart className="text-2xl text-text-primary group-hover:text-red-400 transition-colors" />
                 )}
               </button>
-              <p className="font-bold text-sm">
+              <p className="font-bold text-sm text-text-primary">
                 {likesCount > 0 ? likesCount : ""}
               </p>
             </div>
@@ -269,14 +316,14 @@ const Post = ({ post }) => {
                 onClick={() => setShowComments(!showComments)}
                 className="hover:scale-110 transition-transform duration-200 cursor-pointer"
               >
-                <FaRegComment className="text-xl text-blue-400 transition-colors" />
+                <FaRegComment className="text-xl text-blue-500 transition-colors" />
               </button>
-              <p className="font-bold text-sm">
+              <p className="font-bold text-sm text-text-primary">
                 {comments.length > 0 ? comments.length : ""}
               </p>
             </div>
             <button className="hover:scale-110 transition-transform duration-200 cursor-pointer group">
-              <FiSend className="text-xl text-green-400 transition-colors" />
+              <FiSend className="text-xl text-green-500 transition-colors" />
             </button>
           </div>
           <button
@@ -284,9 +331,9 @@ const Post = ({ post }) => {
             className="hover:scale-110 transition-transform duration-200 cursor-pointer"
           >
             {isSaved ? (
-              <BsBookmarkFill className="text-xl text-yellow-400" />
+              <BsBookmarkFill className="text-xl text-yellow-500" />
             ) : (
-              <BsBookmark className="text-xl text-yellow-400 transition-colors" />
+              <BsBookmark className="text-xl text-text-secondary hover:text-yellow-500 transition-colors" />
             )}
           </button>
         </div>
@@ -294,23 +341,23 @@ const Post = ({ post }) => {
         {/* Caption */}
         {post?.caption && (
           <div className="mb-2">
-            <span className="font-bold text-sm mr-2 text-white">
+            <span className="font-bold text-sm mr-2 text-text-primary">
               {post?.author?.username}
             </span>
-            <span className="text-sm text-gray-300">{post.caption}</span>
+            <span className="text-sm text-text-secondary">{post.caption}</span>
           </div>
         )}
         {comments && comments.length > 0 && (
           <button
             onClick={() => setShowComments(!showComments)}
-            className="text-gray-400 text-sm mb-2 hover:text-white font-semibold transition-colors"
+            className="text-text-muted text-sm mb-2 hover:text-text-primary font-semibold transition-colors"
           >
             View all {comments.length} comments
           </button>
         )}
 
         {/* Time */}
-        <p className="text-xs text-gray-500 mt-2 uppercase tracking-wide">
+        <p className="text-xs text-text-muted mt-2 uppercase tracking-wide">
           {post?.createdAt
             ? new Date(post.createdAt).toLocaleDateString("en-US", {
                 month: "short",
@@ -328,31 +375,33 @@ const Post = ({ post }) => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="fixed inset-0 bg-black/95 backdrop-blur-sm z-9999 flex flex-col animate-fadeIn"
+            className="fixed inset-0 backdrop-blur-md bg-black/60 dark:bg-black/85 z-9999 flex flex-col animate-fadeIn"
             onClick={(e) =>
               e.target === e.currentTarget && setShowComments(false)
             }
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-5 border-b border-gray-700 bg-gradient-to-r from-purple-900/30 to-pink-900/30">
-              <h3 className="text-xl font-bold text-white">Comments</h3>
+            <div
+              className="flex items-center justify-between p-5 border-b border-border bg-linear-to-r from-purple-500/15 to-pink-500/15 backdrop-blur-sm"
+            >
+              <h3 className="text-xl font-bold text-text-primary">Comments</h3>
               <button
                 onClick={() => setShowComments(false)}
-                className="text-gray-400 hover:text-white text-3xl transition-colors cursor-pointer duration-300"
+                className="text-text-secondary hover:text-text-primary text-3xl transition-colors cursor-pointer duration-300"
               >
                 ×
               </button>
             </div>
 
             {/* Comments List */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+            <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-bg/95">
               {comments.length > 0 ? (
                 comments.map((comment, index) => (
                   <div
                     key={index}
-                    className="flex gap-3 bg-gray-800/50 p-3 rounded-xl hover:bg-gray-700/50 transition-colors"
+                    className="flex gap-3 p-3 rounded-xl transition-colors bg-purple-500/10 hover:bg-purple-500/15"
                   >
-                    <div className="h-9 w-9 rounded-full overflow-hidden border-2 border-purple-500 flex-shrink-0">
+                    <div className="h-9 w-9 rounded-full overflow-hidden border-2 border-purple-500 shrink-0">
                       {comment.author?.profileImage ? (
                         <img
                           src={comment.author.profileImage}
@@ -360,20 +409,21 @@ const Post = ({ post }) => {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                        <div className="w-full h-full bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                           <FaUserLarge className="text-white text-xs" />
                         </div>
                       )}
                     </div>
                     <div className="flex-1">
-                      
                       <div className="flex items-center gap-2 justify-between mb-1">
-                        <p className="font-bold text-sm text-white mb-1">
+                        <p className="font-bold text-sm text-text-primary mb-1">
                           {comment.author?.username || comment.author?.name}
                         </p>
-                        <p className="px-2.5 py-1.5 border border-purple-500 bg-purple-500/15 rounded-full text-gray-400 text-xs">{moment(comment.createdAt).fromNow()}</p>
+                        <p className="px-2.5 py-1.5 border border-purple-500/50 rounded-full text-text-muted text-xs bg-purple-500/10">
+                          {moment(comment.createdAt).fromNow()}
+                        </p>
                       </div>
-                      <p className="text-gray-300 text-sm leading-relaxed">
+                      <p className="text-text-secondary text-sm leading-relaxed">
                         {comment.content}
                       </p>
                     </div>
@@ -382,8 +432,8 @@ const Post = ({ post }) => {
               ) : (
                 <div className="text-center py-20">
                   <FaRegComment className="text-6xl text-blue-500 mx-auto mb-4" />
-                  <p className="text-gray-400 text-lg">No comments yet</p>
-                  <p className="text-gray-500 text-sm mt-2">
+                  <p className="text-text-primary text-lg">No comments yet</p>
+                  <p className="text-text-muted text-sm mt-2">
                     Be the first to comment!
                   </p>
                 </div>
@@ -393,24 +443,144 @@ const Post = ({ post }) => {
             {/* Comment Input */}
             <form
               onSubmit={handleCommentSubmit}
-              className="p-5 border-t border-gray-700 bg-gray-900/50 flex gap-3"
+              className="p-5 border-t border-border bg-surface/95 backdrop-blur-sm flex gap-3"
             >
               <input
                 type="text"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="Add a comment..."
-                className="flex-1 bg-gray-800 text-white px-5 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-400 transition-all"
+                className="flex-1 text-text-primary bg-surface-hover px-5 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all placeholder:text-text-muted"
               />
 
               <button
                 type="submit"
                 disabled={!comment.trim()}
-                className="hover:scale-110 transition-transform duration-200 cursor-pointer group"
+                className="hover:scale-110 transition-transform duration-200 cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FiSend className="text-2xl text-green-400 transition-colors" />
               </button>
             </form>
+          </motion.div>,
+          document.body,
+        )}
+
+      {/* Report Modal */}
+      <AnimatePresence>
+        {showReportModal && (
+          <ReportPost
+            postId={post._id}
+            onClose={() => setShowReportModal(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Post Options Modal */}
+      {clickThreedots &&
+        createPortal( //create portal to render modal at the end of body to avoid z-index and overflow issues
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 backdrop-blur-md bg-black/50 z-9999 flex items-center justify-center animate-fadeIn"
+            
+            onClick={() => setClickThreeDots(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="bg-surface rounded-2xl overflow-hidden w-full max-w-md mx-4 border-2 border-border shadow-lg"
+              
+              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
+            >
+              {isOwnPost ? (
+                // Options for own post
+                <div className="flex flex-col">
+                  <button
+                    onClick={() => {
+                      // Edit post logic here
+                      handleEditPost(post._id);
+                      setClickThreeDots(false);
+                    }}
+                    className="px-6 py-4 flex items-center gap-3 text-sm font-semibold text-text-primary hover:bg-surface-hover active:bg-border transition-all duration-150 border-b border-border"
+                  >
+                    <AiOutlineEdit className="text-xl" />
+                    <span>Edit Post</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Delete post logic here
+                      handleDeletePost(post._id);
+                      setClickThreeDots(false);
+                    }}
+                    className="px-6 py-4 flex items-center gap-3 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 active:bg-red-100 dark:active:bg-red-950/30 transition-all duration-150 border-b border-border"
+                  >
+                    <FaTrash className="text-lg" />
+                    <span>Delete Post</span>
+                  </button>
+                  <button
+                    onClick={() => setClickThreeDots(false)}
+                    className="px-6 py-3.5 text-center text-sm text-text-muted hover:text-text-primary hover:bg-surface-hover/50 transition-all duration-150 rounded-b-2xl"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                // Options for other users' posts
+                <div className="flex flex-col">
+                  <button
+                    onClick={() => {
+                      handleSave();
+                      setClickThreeDots(false);
+                    }}
+                    className="px-6 py-4 flex items-center gap-3 text-sm font-bold text-text-primary hover:bg-surface-hover active:bg-border transition-all duration-150 border-b border-border"
+                  >
+                    {isSaved ? (
+                      <>
+                        <BsBookmarkFill className="text-xl text-yellow-500" />
+                        <span>Unsave</span>
+                      </>
+                    ) : (
+                      <>
+                        <BsBookmark className="text-xl" />
+                        <span>Save</span>
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => {
+                      // About this account logic here
+                      navigate(`/profile/${post?.author?.username}`);
+                      setClickThreeDots(false);
+                    }}
+                    className="px-6 py-4 flex items-center gap-3 text-sm font-semibold text-text-primary hover:bg-surface-hover active:bg-border transition-all duration-150 border-b border-border"
+                  >
+                    <MdInfo className="text-2xl" />
+                    <span>About This Account</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Report logic here
+                      setShowReportModal(true);
+                      setClickThreeDots(false);
+                    }}
+                    className="px-6 py-4 flex items-center gap-3 text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 active:bg-red-100 dark:active:bg-red-950/30 transition-all duration-150 border-b border-border"
+                  >
+                    <MdReportProblem className="text-xl" />
+                    <span>Report</span>
+                  </button>
+                  <button
+                    onClick={() => setClickThreeDots(false)}
+                    className="px-6 py-3.5 text-center text-sm text-text-muted hover:text-text-primary hover:bg-surface-hover/50 transition-all duration-150 rounded-b-2xl"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </motion.div>
           </motion.div>,
           document.body,
         )}
