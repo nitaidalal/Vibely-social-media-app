@@ -8,9 +8,9 @@ import { toggleTheme } from '../redux/themeSlice'
 
 // Icons
 import { 
-  IoPersonOutline, IoLockClosedOutline, IoNotificationsOutline, 
+  IoPersonOutline, IoLockClosedOutline, 
   IoShieldCheckmarkOutline, IoHelpCircleOutline, IoInformationCircleOutline, 
-  IoLogOutOutline, IoKeyOutline, IoMailOutline, IoGlobeOutline, 
+  IoLogOutOutline, IoKeyOutline, IoGlobeOutline, 
   IoMoonOutline, IoSunnyOutline 
 } from 'react-icons/io5'
 import { MdPrivacyTip, MdReportProblem } from 'react-icons/md'
