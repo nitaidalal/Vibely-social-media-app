@@ -14,10 +14,10 @@ import Loader from '../components/Loader';
 import Follow from '../components/Resuable/Follow';
 import { BsBookmark } from "react-icons/bs";
 import Post from '../components/Post';
+import VibeCard from '../components/VibeCard';
 
 
 const Profile = () => {
-  const {theme} = useSelector((state) => state.theme);
   const { username } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -187,9 +187,9 @@ const Profile = () => {
               </span>
             </button>
             <button
-              onClick={() => setActiveTab("reels")}
+              onClick={() => setActiveTab("vibes")}
               className={`flex-1 py-3 flex items-center justify-center gap-2 border-t-2 cursor-pointer ${
-                activeTab === "reels"
+                activeTab === "vibes"
                   ? "border-accent text-text-primary"
                   : "border-transparent text-gray-400"
               } transition-colors`}
@@ -259,7 +259,7 @@ const Profile = () => {
               )}
             </div>
           )}
-          {activeTab === "reels" && (
+          {activeTab === "vibes" && (
             <div className="flex flex-col items-center justify-center  text-gray-400">
               {profileData?.vibes && profileData.vibes.length > 0 ? (
                 <div className="grid grid-cols-3 gap-1">
@@ -336,7 +336,7 @@ const Profile = () => {
       {/* Posts Viewer Modal (Instagram-style) */}
       {selectedSource && selectedPostIndex !== null && getActiveList() && (
         <div
-          className="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center px-2"
+          className="fixed inset-0 bg-black/90 z-9999 flex items-center justify-center px-2"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setSelectedSource(null);
@@ -355,12 +355,16 @@ const Profile = () => {
               ×
             </button>
             <div className="h-full overflow-y-auto space-y-6 pt-2 pb-4">
-              {getActiveList().map((post, idx) => (
+              {getActiveList().map((item, idx) => (
                 <div
-                  key={post._id || idx}
+                  key={item._id || idx}
                   ref={idx === selectedPostIndex ? selectedItemRef : null}
                 >
-                  <Post post={post} />
+                  {selectedSource === 'vibes' ? (
+                    <VibeCard vibe={item} />
+                  ) : (
+                    <Post post={item} />
+                  )}
                 </div>
               ))}
             </div>
