@@ -57,7 +57,7 @@ const RightHome = () => {
       </div>
 
       {/* suggested users */}
-      <div className="mt-4 pt-4  border-t border-gray-800">
+      <div className="mt-4 pt-4  border-t border-border">
         <h3 className="text-xl font-semibold mb-4">Suggested people</h3>
         <div className="flex  flex-col gap-4">
           {loading ? (

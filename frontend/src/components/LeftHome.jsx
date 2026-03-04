@@ -135,7 +135,7 @@ const LeftHome = () => {
       {/* ── TOP SECTION ── */}
       <div>
         {/* Logo */}
-        <div className="flex items-center md:justify-center lg:justify-start px-3 h-[72px] mb-1">
+        <div className="flex items-center md:justify-center lg:justify-start px-3 h-16 mb-1">
           <img
             src="/logo.png"
             alt="Logo"
@@ -143,7 +143,7 @@ const LeftHome = () => {
             onClick={() => navigate("/")}
           />
           <span
-            className="text-primary text-2xl font-bold ml-1.5 hidden lg:block cursor-pointer"
+            className="text-primary text-3xl font-bold ml-0.5 hidden lg:block cursor-pointer"
             onClick={() => navigate("/")}
           >
             ynox
@@ -165,7 +165,7 @@ const LeftHome = () => {
                   md:justify-center lg:justify-start
                   ${
                     active
-                      ? "bg-primary/10 text-primary font-semibold"
+                      ? "bg-primary/10 text-primary font-semibold border-l-4 border-primary"
                       : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
                   }
                 `}
@@ -190,15 +190,15 @@ const LeftHome = () => {
               md:justify-center lg:justify-start
               ${
                 isActive(`/profile/${userData?.username}`)
-                  ? "bg-primary/10 text-primary font-semibold"
+                  ? "bg-primary/10 text-primary font-semibold border-l-4 border-primary"
                   : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
               }
             `}
           >
             <div
               className="
-                h-7 w-7 rounded-full overflow-hidden shrink-0
-                border-2 border-border flex justify-center items-center bg-surface
+                h-9 w-9 rounded-full overflow-hidden shrink-0
+                border-2 border-primary flex justify-center items-center bg-surface
               "
             >
               {userData?.profileImage ? (
