@@ -25,10 +25,13 @@ const messageSchema = new Schema({
     },
     messageType: {
         type: String,
-        enum: ["text", "image"],
+        enum: ["text", "image","text_image"],
         default: "text"
     }
 }, { timestamps: true });
+
+
+messageSchema.index({ conversationId: 1, createdAt: 1 }); // For efficient retrieval of messages in a conversation
 
 const Message = model("Message", messageSchema);
 export default Message;
