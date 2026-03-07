@@ -1,5 +1,7 @@
 import SignUp from './pages/SignUp'
 import SignIn from './pages/SignIn'
+import Search from './pages/Search'
+import AppLayout from './components/AppLayout'
 import Profile from './pages/Profile'
 import EditProfile from './pages/EditProfile'
 import { Routes, Route, Navigate } from 'react-router-dom'
@@ -13,6 +15,8 @@ import Vibes from './pages/Vibes'
 import Settings from './pages/Settings'
 import Story from './components/Story'
 import getSuggestedUsers from './hooks/getSuggestedUsers'
+import Messages from './pages/Messages'
+import useInitSocket from './hooks/useInitSocket'
 import { useEffect } from 'react'
 
 const App = () => {
@@ -27,6 +31,7 @@ const App = () => {
   
   getSuggestedUsers();
   useGetCurrentUser();
+  useInitSocket();
   return (
     <>
       <Toaster
@@ -86,17 +91,24 @@ const App = () => {
         }}
       />
       <Routes>
+        {/* Public routes — no sidebar */}
         <Route path="/signup" element={!userData ? <SignUp /> : <Navigate to="/" />} />
         <Route path="/signin" element={!userData ? <SignIn /> : <Navigate to="/" />} />
-        <Route path="/" element={userData ? <Home /> : <Navigate to="/signin" />} />
-        <Route path='/profile/:username' element={userData ? <Profile /> : <Navigate to="/signin" />} />
-        <Route path='/upload' element={userData ? <UploadPost /> : <Navigate to="/signin" />} />
-        <Route path='/upload-story' element={userData ? <UploadPost isStory={true} /> : <Navigate to="/signin" />} />
-        <Route path='/story/:username' element={userData ? <Story /> : <Navigate to="/signin" />} />
-        <Route path='/edit-profile' element={userData ? <EditProfile /> : <Navigate to="/signin" />} />
-        <Route path='/vibes' element={userData ? <Vibes /> : <Navigate to="/signin" />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path='/settings' element={userData ? <Settings /> : <Navigate to="/signin" />} />
+
+        {/* Authenticated routes — AppLayout renders LeftHome sidebar for desktop */}
+        <Route element={userData ? <AppLayout /> : <Navigate to="/signin" />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/profile/:username" element={<Profile />} />
+          <Route path="/upload" element={<UploadPost />} />
+          <Route path="/upload-story" element={<UploadPost isStory={true} />} />
+          <Route path="/story/:username" element={<Story />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
+          <Route path="/vibes" element={<Vibes />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/messages" element={<Messages />} />
+        </Route>
       </Routes>
     </>
   );

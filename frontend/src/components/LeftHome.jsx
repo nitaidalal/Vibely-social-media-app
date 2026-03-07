@@ -30,6 +30,8 @@ import LogoutModal from "./settings/LogoutModal";
 const LeftHome = () => {
   const { userData } = useSelector((state) => state.user);
   const { theme } = useSelector((state) => state.theme);
+  const { unreadSenders } = useSelector((state) => state.message);
+  const unreadCount = unreadSenders.length;
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -105,9 +107,23 @@ const LeftHome = () => {
       label: "Messages",
       path: "/messages",
       icon: isActive("/messages") ? (
-        <LuSend className="text-2xl" />
+        <div className="relative">
+          <LuSend className="text-2xl" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 bg-danger text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
+        </div>
       ) : (
-        <LuSend className="text-2xl" />
+        <div className="relative">
+          <LuSend className="text-2xl" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 bg-danger text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
+        </div>
       ),
     },
     {
