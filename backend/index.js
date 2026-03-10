@@ -9,6 +9,7 @@ import postRouter from './routes/post.routes.js';
 import vibeRouter from './routes/vibe.routes.js';
 import storyRouter from './routes/story.routes.js';
 import messageRouter from './routes/message.routes.js';
+import notificationRouter from './routes/notification.routes.js';
 import { app, server } from './config/socket.js';
 
 dotenv.config();
@@ -34,6 +35,7 @@ app.use("/api/posts",postRouter);
 app.use("/api/vibes",vibeRouter);
 app.use("/api/story",storyRouter);
 app.use("/api/messages",messageRouter);
+app.use("/api/notifications",notificationRouter);
 
 
 app.get("/",(req,res) => {
