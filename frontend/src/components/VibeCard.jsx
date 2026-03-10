@@ -9,7 +9,6 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { FiSend } from "react-icons/fi";
 import { FaRegComment } from "react-icons/fa";
-import { delay, motion } from 'framer-motion';
 
 
 
@@ -70,11 +69,7 @@ const VibeCard = ({
     }
   }, [vibe, userData]);
 
-  const handleLike = async (isDoubleClick = false) => {
-    // If double-click and already liked, don't unlike (Instagram behavior)
-    if (isDoubleClick && isLiked) {
-      return;
-    }
+  const handleLike = async (isDoubleClick = false) =>{
 
     try {
       const response = await axios.post(
@@ -85,18 +80,12 @@ const VibeCard = ({
 
       setIsLiked(!isLiked);
       
-      // Trigger heart animation only when liking
-      if(!isLiked) {
-        setShowHeartAnimation(true);
-        setTimeout(() => setShowHeartAnimation(false), 1000);
-      }
-      
       // Update Redux store
       dispatch(likeVibe({ 
         vibeId: vibe._id, 
-        likes: response.data.vibe.likes 
+        likes: response.data.likes 
       }));
-      setLikesCount(response.data.vibe.likes.length);
+      setLikesCount(response.data.likes.length);
     } catch (error) {
       console.error('Error liking vibe:', error);
       toast.error('Failed to like vibe');
@@ -105,12 +94,12 @@ const VibeCard = ({
 
   const handleDoubleClick = (e) => {
     e.preventDefault();
-    // Show heart animation
     setShowHeartAnimation(true);
     setTimeout(() => setShowHeartAnimation(false), 1500);
     
-    // Pass true to indicate it's a double-click
+   if(!isLiked){
     handleLike(true);
+   }
   }
 
   const handleComment = async (e) => {
