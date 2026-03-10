@@ -3,6 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { initSocket, disconnectSocket, getSocket } from "../socket/socket";
 
 import { setOnlineUsers, setTypingUser } from "../redux/socketSlice";
+import { likePost, addComment } from "../redux/postSlice";
+import {likeVibe, addVibeComment} from "../redux/vibeSlice";
+import { addNotification } from "../redux/notificationSlice";
 
 import {
   addMessage,
@@ -43,6 +46,31 @@ const useInitSocket = () => {
 
     socket.on("stopTyping", () => {
       dispatch(setTypingUser(null));
+    });
+
+    // Post liked event
+    socket.on("postLiked", ({ postId, likes }) => {
+      dispatch(likePost({ postId, likes }));
+    });
+
+    // Post commented event
+    socket.on("postCommented", ({ postId, comments }) => {
+      dispatch(addComment({ postId, comments }));
+    });
+
+    //Vibe liked event
+    socket.on("vibeLiked",({vibeId, likes}) => {
+      dispatch(likeVibe({vibeId, likes}));
+    });
+
+    //Vibe commented event
+    socket.on("vibeCommented",({vibeId, comments}) => {
+      dispatch(addVibeComment({vibeId, comments}));
+    });
+
+    // Real-time notification event
+    socket.on("newNotification", (notification) => {
+      dispatch(addNotification(notification));
     });
 
     return () => {
