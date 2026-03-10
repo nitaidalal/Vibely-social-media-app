@@ -6,6 +6,7 @@ import storyReducer from './storySlice';
 import themeReducer from './themeSlice';
 import messageReducer from './messageSlice';
 import socketReducer from './socketSlice';
+import notificationReducer from './notificationSlice';
 
 export const store = configureStore({
     reducer:{
@@ -16,5 +17,6 @@ export const store = configureStore({
         theme: themeReducer,
         message: messageReducer,
         socket: socketReducer,
+        notification: notificationReducer,
     }
 })
