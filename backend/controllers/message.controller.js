@@ -134,6 +134,17 @@ export const getMessages = async (req, res) => {
 
         const messages = await Message.find(messageQuery)
             .populate("sender", "name username profileImage")
+            .populate({
+                path: "sharedPost",
+                select: "mediaUrl mediaType caption author",
+                populate: { path: "author", select: "name username profileImage" }
+            })
+            .populate({
+                path: "sharedVibe",
+                select: "mediaUrl caption author",
+                populate: { path: "author", select: "name username profileImage" }
+            })
+            .populate("sharedProfile", "name username profileImage")
             .sort({ createdAt: 1 });
 
         // Mark all unread messages (from the other user) as seen
@@ -247,3 +258,77 @@ export const deleteMessage = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+
+export const shareToChat = async (req,res) => {
+    try {
+        const senderId = req.userId;
+        const { receiverId} = req.params;
+
+        const { contentType, contentId } = req.body;
+        // Find existing conversation between the two users
+        let conversation = await Conversation.findOne({
+            participants: { $all: [senderId, receiverId] }
+        });
+
+        // Create a new conversation if one doesn't exist
+        if(!conversation) {
+            conversation = await Conversation.create({
+                participants: [senderId, receiverId]
+            });
+        }
+
+        let messageData = {
+            conversationId: conversation._id,
+            sender: senderId,
+        }
+
+        if(contentType === "post") {
+            messageData.messageType = "sharedPost";
+            messageData.sharedPost = contentId;
+        } else if(contentType === "vibe") {
+            messageData.messageType = "sharedVibe";
+            messageData.sharedVibe = contentId;
+        } else if(contentType === "profile") {
+            messageData.messageType = "sharedProfile";
+            messageData.sharedProfile = contentId;
+        }
+
+        const newMessage = await Message.create(messageData);
+
+        // Restore conversation for both parties and update lastMessage
+        conversation.lastMessage = newMessage._id;
+        conversation.deletedFor = []; // clear so both sender & receiver see the chat again
+        await conversation.save();
+
+        // Populate sender details for the response
+        await newMessage.populate("sender", "name username profileImage");
+
+        // Populate the shared content so receiver gets full card data in real-time
+        if (contentType === "post") {
+            await newMessage.populate({
+                path: "sharedPost",
+                select: "mediaUrl mediaType caption author",
+                populate: { path: "author", select: "name username profileImage" }
+            });
+        } else if (contentType === "vibe") {
+            await newMessage.populate({
+                path: "sharedVibe",
+                select: "mediaUrl caption author",
+                populate: { path: "author", select: "name username profileImage" }
+            });
+        } else if (contentType === "profile") {
+            await newMessage.populate("sharedProfile", "name username profileImage");
+        }
+
+        // ── Real-time: emit to receiver if they are online ──
+        const receiverSocketId = getReceiverSocketId(receiverId);
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("newMessage", newMessage);
+        }
+        res.status(201).json(newMessage);
+    } catch (error) {
+        console.error("shareToChat error:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
