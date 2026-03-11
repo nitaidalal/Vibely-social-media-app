@@ -6,7 +6,8 @@ import {
     getConversations,
     getMessages,
     deleteMessage,
-    deleteConversation
+    deleteConversation,
+    shareToChat
 } from "../controllers/message.controller.js";
 
 const messageRouter = express.Router();
@@ -25,5 +26,8 @@ messageRouter.delete("/:messageId", authMiddleware, deleteMessage);
 
 // Delete a conversation (for the requesting user only)
 messageRouter.delete("/conversations/:conversationId", authMiddleware, deleteConversation);
+
+//shared post, vibe, profile message routes in one endpoint
+messageRouter.post("/share/:receiverId", authMiddleware, shareToChat);
 
 export default messageRouter;
