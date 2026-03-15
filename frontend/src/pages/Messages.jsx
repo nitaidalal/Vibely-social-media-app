@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getSocket } from "../socket/socket";
 import { BsThreeDots } from "react-icons/bs";
@@ -83,51 +83,154 @@ const Avatar = ({ src, name, size = "md", isOnline }) => {
 
 const MessageBubble = ({ msg, isMine, onDelete }) => {
     const [hover, setHover] = useState(false);
+    const navigate = useNavigate();
+
+    const renderContent = () => {
+        // ── Shared Post or Vibe ──
+        if (msg.messageType === "sharedPost" || msg.messageType === "sharedVibe") {
+            const content = msg.sharedPost || msg.sharedVibe;
+            const label = msg.messageType === "sharedPost" ? "Post" : "Vibe";
+
+            if (!content) {
+                return (
+                    <div className={`rounded-2xl border border-border px-4 py-3 text-sm text-text-muted max-w-[260px] ${isMine ? "bg-primary/10" : "bg-surface"}`}>
+                        This {label.toLowerCase()} is no longer available.
+                    </div>
+                );
+            }
+
+            return (
+              <div
+                className={`rounded-2xl overflow-hidden border shadow-sm max-w-[260px] ${isMine ? "border-primary/30 bg-primary/5" : "border-border bg-surface"}`}
+              >
+                {content.mediaUrl &&
+                  (content.mediaType === "video" ||
+                  msg.messageType === "sharedVibe" ? (
+                    <video
+                      src={content.mediaUrl}
+                      className="w-full max-h-48 object-cover"
+                      muted
+                      playsInline
+                    />
+                  ) : (
+                    <img
+                      src={content.mediaUrl}
+                      alt={label}
+                      className="w-full max-h-48 object-cover"
+                    />
+                  ))}
+                <div className="px-3 py-2.5">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    {content.author?.profileImage ? (
+                      <img
+                        src={content.author.profileImage}
+                        alt={content.author?.username}
+                        className="w-5 h-5 rounded-full object-cover shrink-0"
+                      />
+                    ) : (
+                      <div className="w-5 h-5 rounded-full bg-linear-to-br from-purple-500 to-pink-500 shrink-0" />
+                    )}
+                    <span className="text-xs font-semibold text-text-primary truncate">
+                      @{content.author?.username}
+                    </span>
+                    <span className="text-[10px] text-text-muted ml-auto shrink-0">
+                      {label}
+                    </span>
+                  </div>
+                  {content.caption && (
+                    <p className="text-xs text-text-secondary line-clamp-2 mb-2">
+                      {content.caption}
+                    </p>
+                  )}
+                  <button
+                    onClick={() =>
+                      navigate(
+                        msg.messageType === "sharedPost"
+                          ? `/post/${content._id}`
+                          : `/vibe/${content._id}`,
+                      )
+                    }
+                    className="text-xs font-semibold text-primary hover:underline"
+                  >
+                    View {label} &rarr;
+                  </button>
+                </div>
+              </div>
+            );
+        }
+
+        // ── Shared Profile ──
+        if (msg.messageType === "sharedProfile") {
+            const profile = msg.sharedProfile;
+
+            if (!profile) {
+                return (
+                    <div className={`rounded-2xl border border-border px-4 py-3 text-sm text-text-muted max-w-[260px] ${isMine ? "bg-primary/10" : "bg-surface"}`}>
+                        This profile is no longer available.
+                    </div>
+                );
+            }
+
+            return (
+                <div className={`rounded-2xl overflow-hidden border shadow-sm max-w-[260px] ${isMine ? "border-primary/30 bg-primary/5" : "border-border bg-surface"}`}>
+                    <div className="flex items-center gap-3 px-3 py-3">
+                        {profile.profileImage ? (
+                            <img src={profile.profileImage} alt={profile.name} className="w-12 h-12 rounded-full object-cover shrink-0" />
+                        ) : (
+                            <div className="w-12 h-12 rounded-full bg-linear-to-br from-purple-500 to-pink-500 shrink-0 flex items-center justify-center">
+                                <span className="text-white font-bold text-lg">{profile.name?.[0]?.toUpperCase()}</span>
+                            </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-text-primary truncate">{profile.name}</p>
+                            <p className="text-xs text-text-muted truncate">@{profile.username}</p>
+                        </div>
+                    </div>
+                    <div className="px-3 pb-3">
+                        <button
+                            onClick={() => navigate(`/profile/${profile.username}`)}
+                            className="text-xs font-semibold text-primary hover:underline"
+                        >
+                            View Profile &rarr;
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // ── Image + Caption (WhatsApp-style) ──
+        if (msg.messageType === "text_image") {
+            return (
+                <div className={`rounded-2xl overflow-hidden text-sm shadow-sm [overflow-wrap:anywhere] ${isMine ? "bg-primary text-white rounded-br-sm border border-primary" : "bg-surface text-text-primary border border-border rounded-bl-sm"}`}>
+                    <img src={msg.image} alt="sent" className="w-full max-h-72 object-cover" />
+                    <p className="px-3 py-2 leading-relaxed">{msg.content}</p>
+                </div>
+            );
+        }
+
+        // ── Image only ──
+        if (msg.messageType === "image") {
+            return (
+                <img src={msg.image} alt="sent" className="max-w-full rounded-2xl max-h-72 object-cover shadow" />
+            );
+        }
+
+        // ── Text only ──
+        return (
+            <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed [overflow-wrap:anywhere] shadow-sm ${isMine ? "bg-primary text-white rounded-br-sm" : "bg-surface text-text-primary border border-border rounded-bl-sm"}`}>
+                {msg.content}
+            </div>
+        );
+    };
+
     return (
       <div
         className={`flex gap-2 mb-2 ${isMine ? "flex-row-reverse" : "flex-row"}`}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
       >
-        <div
-          className={`flex flex-col max-w-[70%] ${isMine ? "items-end" : "items-start"}`}
-        >
-          
-          {msg.messageType === "text_image" ? (
-            // ── Image + Caption card (WhatsApp-style) ──
-            <div
-              className={`rounded-2xl overflow-hidden text-sm shadow-sm [overflow-wrap:anywhere]
-                ${isMine
-                  ? "bg-primary text-white rounded-br-sm border border-primary"
-                  : "bg-surface text-text-primary border border-border rounded-bl-sm"
-                }`}
-            >
-              <img
-                src={msg.image}
-                alt="sent"
-                className="w-full max-h-72 object-cover"
-              />
-              <p className="px-3 py-2 leading-relaxed">{msg.content}</p>
-            </div>
-          ) : msg.messageType === "image" ? (
-            // ── Image only ──
-            <img
-              src={msg.image}
-              alt="sent"
-              className="max-w-full rounded-2xl max-h-72 object-cover shadow"
-            />
-          ) : (
-            // ── Text only ──
-            <div
-              className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed [overflow-wrap:anywhere] shadow-sm
-                ${isMine
-                  ? "bg-primary text-white rounded-br-sm"
-                  : "bg-surface text-text-primary border border-border rounded-bl-sm"
-                }`}
-            >
-              {msg.content}
-            </div>
-          )}
+        <div className={`flex flex-col max-w-[70%] ${isMine ? "items-end" : "items-start"}`}>
+          {renderContent()}
           <div className="flex items-center gap-1 mt-0.5 px-1">
             <span className="text-[10px] text-text-muted">
               {formatTime(msg.createdAt)}
@@ -151,6 +254,8 @@ const MessageBubble = ({ msg, isMine, onDelete }) => {
       </div>
     );
 };
+
+
 
 const DateSeparator = ({ date }) => (
     <div className="flex items-center gap-3 my-4">
@@ -660,10 +765,11 @@ const Messages = () => {
                           <p
                             className={`text-xs truncate flex-1 ${isUnread ? "text-text-primary font-medium" : "text-text-muted"}`}
                           >
-                            {conv.lastMessage?.image
-                              ? "📷 Photo"
-                              : conv.lastMessage?.content ||
-                                "Start a conversation"}
+                            {conv.lastMessage?.messageType === "sharedPost" ? "📷 Shared a post" :
+                              conv.lastMessage?.messageType === "sharedVibe" ? "🎬 Shared a vibe" :
+                              conv.lastMessage?.messageType === "sharedProfile" ? "👤 Shared a profile" :
+                              conv.lastMessage?.image ? "📷 Photo" :
+                              conv.lastMessage?.content || "Start a conversation"}
                           </p>
                           {isUnread && (
                             <span className=" w-2 h-2 rounded-full bg-primary" />
