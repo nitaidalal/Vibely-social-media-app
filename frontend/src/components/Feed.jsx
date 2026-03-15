@@ -4,7 +4,7 @@ import { CiHeart } from "react-icons/ci";
 
 import StoryCard from "./StoryCard";
 import Post from "./Post";
-import Navbar from "./navbar";
+import Navbar from "./Navbar";
 
 import { fetchPostsIfNeeded, fetchMorePosts } from "../redux/postSlice";
 import { fetchStoriesIfNeeded } from "../redux/storySlice";
