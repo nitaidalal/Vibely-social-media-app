@@ -1,149 +1,176 @@
-import React from 'react'
+import React, { useEffect, useRef, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { CiHeart } from "react-icons/ci";
-import {useSelector, useDispatch} from 'react-redux';
-import StoryCard from './StoryCard';
-import Post from './Post';
-import Navbar from './navbar';
-import { useState,useEffect } from 'react';
-import axios from 'axios';
-import { setPosts } from '../redux/postSlice';
-import { setStories } from '../redux/storySlice';
 
+import StoryCard from "./StoryCard";
+import Post from "./Post";
+import Navbar from "./navbar";
+
+import { fetchPostsIfNeeded, fetchMorePosts } from "../redux/postSlice";
+import { fetchStoriesIfNeeded } from "../redux/storySlice";
 
 const Feed = () => {
   const dispatch = useDispatch();
-  const [loading, setLoading] = useState(false);
-  const [storiesLoading, setStoriesLoading] = useState(false);
-  const { posts } = useSelector((state) => state.post);
-  const { stories } = useSelector((state) => state.story);
-  const userData = useSelector((state) => state.user.userData);
 
-  const getAllPosts = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/posts/getAllPosts`, {
-        withCredentials: true
-      });
-      dispatch(setPosts(response.data.posts || []));
-      console.log("All Posts:", response.data.posts);
-    } catch (error) {
-      console.log("Error fetching posts:", error?.response?.data?.message);
-      dispatch(setPosts([]));
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { posts, isLoading, isFetchingMore, hasMore } = useSelector(
+    (state) => state.post,
+  );
 
-  const getAllStories = async () => {
-    try {
-      setStoriesLoading(true);
-      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/story/getAllStories`, {
-        withCredentials: true
-      });
-      dispatch(setStories(response.data.stories || []));
-      console.log("All Stories:", response.data.stories);
-    } catch (error) {
-      console.log("Error fetching stories:", error?.response?.data?.message);
-      dispatch(setStories([]));
-    } finally {
-      setStoriesLoading(false);
-    }
-  }
+  const { stories, isLoading: storiesLoading } = useSelector(
+    (state) => state.story,
+  );
 
-useEffect(() => {
-    getAllPosts();
-    getAllStories();
-}, []);
+  const { userData } = useSelector((state) => state.user);
 
-// const getAllVibes = async() => {
-//   try {
-//     setLoading(true);
+  const observer = useRef(null);
 
-//   } catch (error) {
-    
-//   }
-// }
-  
+  /* ----------------------------
+      Initial Data Load
+  ---------------------------- */
+
+  useEffect(() => {
+    dispatch(fetchPostsIfNeeded({ ttlMs: 30000 }));
+    dispatch(fetchStoriesIfNeeded());
+  }, [dispatch]);
+
+  /* ----------------------------
+      Infinite Scroll
+  ---------------------------- */
+
+  const lastPostRef = useCallback(
+    (node) => {
+      if (isLoading || isFetchingMore || !hasMore) return;
+
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            dispatch(fetchMorePosts());
+          }
+        },
+        {
+          threshold: 0.1,
+          rootMargin: "120px",
+        },
+      );
+
+      if (node) observer.current.observe(node);
+    },
+    [dispatch, hasMore, isFetchingMore, isLoading],
+  );
+
+  /* ----------------------------
+      Cleanup Observer
+  ---------------------------- */
+
+  useEffect(() => {
+    return () => observer.current?.disconnect();
+  }, []);
 
   return (
-    <div className="w-full sm:ml-[72px] md:w-[calc(70%-72px)] lg:ml-[240px] lg:w-[calc(70%-240px)] sm:px-3 lg:px-4  min-h-screen bg-bg text-text-primary overflow-y-auto border-gray-700 relative">
-      <div className="flex mx-6 sm:hidden  justify-between items-center h-14 ">
-        <div className="flex ">
-          <img
-            src="/logo.png"
-            alt="Logo"
-            className="h-8 w-8 sm:h-10 sm:w-10 "
-          />
-          <span className="text-primary text-2xl sm:text-3xl font-bold ">
+    <div className="w-full sm:ml-18 md:w-[calc(70%-72px)] lg:ml-60 lg:w-[calc(70%-240px)] sm:px-3 lg:px-4 min-h-screen bg-bg text-text-primary overflow-y-auto border-gray-700 relative">
+      {/* Mobile Header */}
+
+      <div className="flex mx-6 sm:hidden justify-between items-center h-14">
+        <div className="flex">
+          <img src="/logo.png" alt="Logo" className="h-8 w-8 sm:h-10 sm:w-10" />
+          <span className="text-primary text-2xl sm:text-3xl font-bold">
             ynox
           </span>
         </div>
-        <div>
-          <CiHeart className="text-4xl" />
-        </div>
+
+        <CiHeart className="text-4xl" />
       </div>
 
-      {/* stories section */}
-      <div className="flex  items-center gap-3 py-3 overflow-x-auto px-2">
-        <StoryCard 
-          profileImage={userData?.profileImage} 
-          userName={"Your Story"}
-          ownStory={true}
-          hasStory={userData?.story ? true : false}
+      {/* ----------------------------
+           Stories Section
+      ---------------------------- */}
+
+      <div className="flex items-center gap-3 py-3 overflow-x-auto px-2">
+        <StoryCard
+          profileImage={userData?.profileImage}
+          userName="Your Story"
+          ownStory
+          hasStory={!!userData?.story}
           username={userData?.username}
           storyId={userData?.story}
         />
+
         {storiesLoading ? (
-          <div className="flex justify-center items-center py-4 w-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
-          </div>
-        ) : stories && stories.length > 0 ? (
+          <Loader />
+        ) : stories?.length ? (
           stories
             .filter((story) => story.author?._id !== userData?._id)
             .map((story) => {
-              // Check if current user has viewed this story
-              const isViewed = story.viewers?.some(viewer => 
-                typeof viewer === 'string' ? viewer === userData?._id : viewer._id === userData?._id
+              const viewed = story.viewers?.some((v) =>
+                typeof v === "string"
+                  ? v === userData?._id
+                  : v._id === userData?._id,
               );
-              
+
               return (
-                <StoryCard 
-                  key={story._id} 
+                <StoryCard
+                  key={story._id}
                   profileImage={story.author?.profileImage}
                   userName={story.author?.username || story.author?.name}
-                  hasStory={true}
                   username={story.author?.username}
                   storyId={story._id}
-                  isViewed={isViewed}
+                  hasStory
+                  isViewed={viewed}
                 />
               );
             })
         ) : (
-          <div className="text-center py-4 text-text-secondary w-full">
-            No stories yet
-          </div>
+          <Empty message="No stories yet" />
         )}
       </div>
 
-      {/* Posts section */}
+      {/* ----------------------------
+           Posts Section
+      ---------------------------- */}
+
       <div className="mt-4">
-        {loading ? (
-          <div className="flex justify-center items-center py-10">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-500"></div>
-          </div>
-        ) : posts.length > 0 ? (
-          posts.map((post) => <Post key={post._id} post={post} />)
+        {isLoading ? (
+          <Loader size="10" />
+        ) : posts.length ? (
+          posts.map((post, index) => {
+            const isLast = index === posts.length - 1;
+
+            return (
+              <div key={post._id} ref={isLast ? lastPostRef : null}>
+                <Post post={post} />
+              </div>
+            );
+          })
         ) : (
-          <div className="text-center py-10 text-text-secondary">
-            No posts yet. Be the first to share!
-          </div>
+          <Empty message="No posts yet. Be the first to share!" />
         )}
+
+        {isFetchingMore && <Loader size="8" />}
       </div>
-      <div className=" w-full flex justify-center">
+
+      <div className="w-full flex justify-center">
         <Navbar />
       </div>
     </div>
   );
-}
+};
 
-export default Feed
+/* ----------------------------
+    Reusable Components
+---------------------------- */
+
+const Loader = ({ size = "8" }) => (
+  <div className="flex justify-center items-center py-6">
+    <div
+      className={`animate-spin rounded-full h-${size} w-${size} border-b-2 border-purple-500`}
+    />
+  </div>
+);
+
+const Empty = ({ message }) => (
+  <div className="text-center py-10 text-text-secondary">{message}</div>
+);
+
+export default Feed;
