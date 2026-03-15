@@ -179,7 +179,7 @@ const LeftHome = () => {
             className="text-primary text-3xl font-bold ml-0.5 hidden lg:block cursor-pointer"
             onClick={() => navigate("/")}
           >
-            ynox
+            ibely
           </span>
         </div>
 
