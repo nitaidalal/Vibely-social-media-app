@@ -38,8 +38,20 @@ export const updateProfile = async (req,res) => {
         const userId = req.userId;
         const {name,username, bio,gender} = req.body;
 
+        const hasName = name !== undefined;
+        const hasUsername = username !== undefined;
+        const hasBio = bio !== undefined;
+        const hasGender = gender !== undefined;
+
+        const normalizedName = hasName ? name.trim() : undefined;
+        const normalizedUsername = hasUsername ? username.trim() : undefined;
+        const normalizedGender = hasGender ? gender.trim() : undefined;
+        const normalizedBio = hasBio ? bio.replace(/\r\n/g, "\n") : undefined; //
+
         //check if username is taken by other user
-        const existingUser = await User.findOne({username});
+        const existingUser = normalizedUsername
+            ? await User.findOne({ username: normalizedUsername })
+            : null;
         if(existingUser && existingUser._id.toString() !== userId){
             return res.status(400).json({success:false, message:"Username is already taken"});
         }
@@ -61,10 +73,10 @@ export const updateProfile = async (req,res) => {
         }
 
         const updatedData = {
-            ...(name && {name}),
-            ...(username && {username}),
-            ...(bio && {bio}),
-            ...(gender && {gender}),
+            ...(hasName && { name: normalizedName }),
+            ...(hasUsername && { username: normalizedUsername }),
+            ...(hasBio && { bio: normalizedBio }),
+            ...(hasGender && { gender: normalizedGender }),
             ...(profileImageUrl && {profileImage:profileImageUrl})
         }
         const updatedUser = await User.findByIdAndUpdate(userId, updatedData, {new:true}).select("-password");

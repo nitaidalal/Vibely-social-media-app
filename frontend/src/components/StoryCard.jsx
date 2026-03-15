@@ -18,11 +18,11 @@ const StoryCard = ({profileImage, userName, ownStory=false, hasStory=false, user
     // Determine border style based on viewed status
     const borderClass = hasStory
       ? isViewed
-        ? ""
+        ? "bg-gray-400"
         : "bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600"
       : ownStory
         ? ""
-        : "bg-gray-300";
+        : "bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600";
     
 return (
   <div className="flex flex-col w-[80px] md:w-[100px]  items-center  ">
