@@ -54,7 +54,7 @@ export const signup = async (req,res) => {
             httpOnly: true,
             maxAge: 5 * 365 * 24 * 60 * 60 * 1000, // 5 years
             secure: process.env.NODE_ENV === "production",
-            sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax"
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
         })
 
         res.status(201).json({message:"User created successfully", user:userResponse, token});
@@ -104,7 +104,7 @@ export const signin = async (req, res) => {
       httpOnly: true,
       maxAge: 5 * 365 * 24 * 60 * 60 * 1000, // 5 years
       secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax"
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
     });
 
     res
@@ -123,7 +123,7 @@ export const signout = (req,res) =>{
             httpOnly: true,
             path: "/",
             secure: process.env.NODE_ENV === "production",
-            sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax"
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
         });
 
         res.status(200).json({ message: "User signed out successfully" });
