@@ -14,7 +14,7 @@ import axios from 'axios'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 import Follow from './Resuable/Follow'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion,AnimatePresence } from 'framer-motion'
 
 import moment from 'moment'
 import { AiOutlineEdit } from 'react-icons/ai'
@@ -22,6 +22,7 @@ import { FaTrash } from 'react-icons/fa'
 import { MdInfo, MdReport } from 'react-icons/md'
 import { MdReportProblem } from 'react-icons/md'
 import ReportPost from './report/ReportPost'
+import ShareModal from './ShareModal'
 
 
 const Post = ({ post }) => {
@@ -29,7 +30,7 @@ const Post = ({ post }) => {
   const navigate = useNavigate();
   const videoRef = useRef(null);
   const { userData } = useSelector((state) => state.user); //1
-  const [isPlaying, setIsPlaying] = useState(false);
+  // const [isPlaying, setIsPlaying] = useState(false);
   const [isLiked, setIsLiked] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [likesCount, setLikesCount] = useState(post?.likes?.length || 0)
@@ -40,6 +41,7 @@ const Post = ({ post }) => {
   const [clickThreedots, setClickThreeDots] = useState(false)
   const isOwnPost = post?.author?._id === userData?._id;
   const [showReportModal, setShowReportModal] = useState(false)
+  const [showShare, setShowShare] = useState(false)
   
 
   
@@ -50,12 +52,10 @@ const Post = ({ post }) => {
         if (entry.isIntersecting) {
           if (videoRef.current) {
             videoRef.current.play();
-            setIsPlaying(true);
           }
         } else {
           if (videoRef.current) {
             videoRef.current.pause();
-            setIsPlaying(false);
           }
         }
       })
@@ -82,7 +82,7 @@ const Post = ({ post }) => {
 
   // Lock body scroll when  modal is open
   useEffect(() => {
-    if (showComments || clickThreedots) {
+    if (showComments || clickThreedots || showReportModal || showShare) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -90,7 +90,7 @@ const Post = ({ post }) => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showComments, clickThreedots]);
+  }, [showComments, clickThreedots, showReportModal, showShare ]);
 
   const handleLike = async () => {
     try {
@@ -265,9 +265,8 @@ const Post = ({ post }) => {
             ref={videoRef}
             src={post.mediaUrl}
             controls
-            // muted
+            muted
             loop
-            // autoPlay={true}
             className="w-full max-h-150 object-contain"
           />
         ) : (
@@ -322,7 +321,9 @@ const Post = ({ post }) => {
                 {comments.length > 0 ? comments.length : ""}
               </p>
             </div>
-            <button className="hover:scale-110 transition-transform duration-200 cursor-pointer group">
+            <button
+              onClick={() => setShowShare(true)}
+              className="hover:scale-110 transition-transform duration-200 cursor-pointer group">
               <FiSend className="text-xl text-green-500 transition-colors" />
             </button>
           </div>
@@ -474,6 +475,14 @@ const Post = ({ post }) => {
           />
         )}
       </AnimatePresence>
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={showShare}
+        onClose={() => setShowShare(false)}
+        contentId={post._id}
+        contentType="post"
+      />
 
       {/* Post Options Modal */}
       {clickThreedots &&
