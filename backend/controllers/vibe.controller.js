@@ -1,43 +1,34 @@
 import User from "../models/user.model.js";
 import Vibe from "../models/vibe.model.js";
 import cloudinary from "../config/cloudinary.js";
-import fs from "fs";
 import { io, getReceiverSocketId } from "../config/socket.js";
 import Notification from "../models/notification.model.js";
 
 export const uploadVibe = async (req, res) => {
-  let filePath = null;
   try {
     const userId = req.userId;
     const { caption } = req.body;
 
     const file = req.file;
-    console.log("File mimetype:", req.file.mimetype);
-    console.log("File path:", req.file.path);
-
     if (!file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
+    console.log("File mimetype:", file.mimetype);
+
     if (!file.mimetype.startsWith("video/")) {
-      // Delete file if validation fails
-      if (file.path) fs.unlinkSync(file.path);
       return res.status(400).json({
         message: "Only video files are allowed for vibes",
       });
     }
 
-    filePath = file.path;
+    const fileBase64 = file.buffer.toString("base64");
+    const fileUri = `data:${file.mimetype};base64,${fileBase64}`;
 
-    // Upload to Cloudinary from disk
-    const uploadResult = await cloudinary.uploader.upload(filePath, {
+    const uploadResult = await cloudinary.uploader.upload(fileUri, {
       folder: "vibogram/vibes",
       resource_type: "video",
     });
-
-    // Delete the temporary file after successful upload
-    fs.unlinkSync(filePath);
-    filePath = null;
 
     const vibe = await Vibe.create({
       author: userId,
@@ -59,10 +50,6 @@ export const uploadVibe = async (req, res) => {
       vibe: userVibe,
     });
   } catch (error) {
-    // Delete file if upload fails
-    if (filePath && fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
     console.error("Vibe Upload Error:", error);
     return res.status(500).json({
       message: "Vibe upload failed",

@@ -1,12 +1,10 @@
 import cloudinary from "../config/cloudinary.js";
 import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
-import fs from "fs";
 import {io, getReceiverSocketId} from "../config/socket.js";
 import Notification from "../models/notification.model.js";
 
 export const uploadPost = async (req, res) => {
-    let filePath = null;
     try {
         const userId = req.userId;
         const {caption, mediaType} = req.body;
@@ -26,17 +24,8 @@ export const uploadPost = async (req, res) => {
             });
         }
 
-        // Check if file is on disk or in memory
-        let fileUri;
-        if (file.path) {
-            // File is on disk
-            filePath = file.path;
-            fileUri = filePath;
-        } else {
-            // File is in memory (buffer)
-            const fileBase64 = file.buffer.toString("base64");
-            fileUri = `data:${file.mimetype};base64,${fileBase64}`;
-        }
+        const fileBase64 = file.buffer.toString("base64");
+        const fileUri = `data:${file.mimetype};base64,${fileBase64}`;
 
         // Configure upload options based on mediaType
         let uploadOptions = {
@@ -59,12 +48,6 @@ export const uploadPost = async (req, res) => {
         const uploadResult = await cloudinary.uploader.upload(fileUri, uploadOptions);
         const mediaUrl = uploadResult.secure_url;
 
-        // Delete temporary file if it exists
-        if (filePath && fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-            filePath = null;
-        }
-
         const post = await Post.create({
             author: userId,
             caption,
@@ -85,10 +68,6 @@ export const uploadPost = async (req, res) => {
         });
 
     } catch (error) {
-        // Delete temporary file if upload fails
-        if (filePath && fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-        }
         console.log("Post Upload Error:", error);
         res.status(500).json({
             message: "Post upload failed",

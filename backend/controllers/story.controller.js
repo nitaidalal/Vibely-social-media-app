@@ -1,10 +1,8 @@
 import Story from "../models/story.model.js";
 import User from "../models/user.model.js";
 import cloudinary from "../config/cloudinary.js";
-import fs from "fs";
 
 export const uploadStory = async (req, res) => {
-    let filePath = null;
     try {
         const user = await User.findById(req.userId);
         if(user.story){
@@ -13,17 +11,8 @@ export const uploadStory = async (req, res) => {
         }
 
         if(req.file){
-            // Check if file is on disk or in memory
-            let fileUri;
-            if (req.file.path) {
-                // File is on disk
-                filePath = req.file.path;
-                fileUri = filePath;
-            } else {
-                // File is in memory (buffer)
-                const fileBase64 = req.file.buffer.toString("base64");
-                fileUri = `data:${req.file.mimetype};base64,${fileBase64}`;
-            }
+            const fileBase64 = req.file.buffer.toString("base64");
+            const fileUri = `data:${req.file.mimetype};base64,${fileBase64}`;
 
             const uploadResult = await cloudinary.uploader.upload(fileUri, {
                 folder: "vibogram/stories",
@@ -38,12 +27,6 @@ export const uploadStory = async (req, res) => {
 
             // Automatically determine mediaType from Cloudinary's resource_type
             const mediaType = uploadResult.resource_type === "video" ? "video" : "image";
-
-            // Delete temporary file if it exists
-            if (filePath && fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-                filePath = null;
-            }
                 
             const story = await Story.create({
                 author: user._id,
@@ -59,10 +42,6 @@ export const uploadStory = async (req, res) => {
             res.status(201).json({ message: "Story uploaded successfully", story: populatedStory });
         }
     } catch (error) {
-        // Delete temporary file if upload fails
-        if (filePath && fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-        }
         console.error("Upload Story Error:", error);
         res.status(500).json({ message: error.message });
     }
