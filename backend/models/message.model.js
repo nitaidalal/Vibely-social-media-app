@@ -25,8 +25,23 @@ const messageSchema = new Schema({
     },
     messageType: {
         type: String,
-        enum: ["text", "image","text_image"],
+        enum: ["text", "image","text_image", "sharedPost", "sharedVibe", "sharedProfile"],
         default: "text"
+    },
+    sharedPost: {
+        type: Schema.Types.ObjectId,
+        ref: "Post",
+        default: null
+    },
+    sharedVibe: {
+        type: Schema.Types.ObjectId,
+        ref: "Vibe",
+        default: null
+    },
+    sharedProfile: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        default: null
     }
 }, { timestamps: true });
 
