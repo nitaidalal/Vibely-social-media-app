@@ -30,6 +30,10 @@ app.use(
 );
 app.use(cookieParser());
 
+app.get("/", (req, res) => {
+  res.send("hello");
+}); 
+
 //routes
 app.use("/api/auth",authRouter);
 app.use("/api/user",userRouter);
@@ -40,9 +44,7 @@ app.use("/api/messages",messageRouter);
 app.use("/api/notifications",notificationRouter);
 
 
-app.get("/",(req,res) => {
-    res.send("hello");
-}) 
+
 
 server.listen(port,()=> {
     connectDb();
