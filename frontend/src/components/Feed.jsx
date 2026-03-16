@@ -8,9 +8,12 @@ import Navbar from "./Navbar";
 
 import { fetchPostsIfNeeded, fetchMorePosts } from "../redux/postSlice";
 import { fetchStoriesIfNeeded } from "../redux/storySlice";
+import { useNavigate } from "react-router-dom";
+import { IoMdAddCircleOutline } from "react-icons/io";
 
 const Feed = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const { posts, isLoading, isFetchingMore, hasMore } = useSelector(
     (state) => state.post,
@@ -79,8 +82,18 @@ const Feed = () => {
             ynox
           </span>
         </div>
-
-        <CiHeart className="text-4xl" />
+        <div className="flex items-center gap-6">
+          <button
+            onClick={() => navigate("/upload")}
+            className="flex flex-col items-center justify-center hover:scale-110 transition-transform duration-200 group cursor-pointer"
+          >
+            <div className=" bg-white rounded-full p-0.5">
+              <IoMdAddCircleOutline className="text-xl sm:text-3xl text-purple-600 group-hover:text-pink-600 transition-colors" />
+            </div>
+            <span className="text-[10px] mt-1 hidden sm:block">Create</span>
+          </button>
+          <CiHeart className="text-4xl" />
+        </div>
       </div>
 
       {/* ----------------------------
