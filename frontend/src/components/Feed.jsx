@@ -15,6 +15,7 @@ const Feed = () => {
   const { posts, isLoading, isFetchingMore, hasMore } = useSelector(
     (state) => state.post,
   );
+  const safePosts = Array.isArray(posts) ? posts : [];
 
   const { stories, isLoading: storiesLoading } = useSelector(
     (state) => state.story,
@@ -133,9 +134,9 @@ const Feed = () => {
       <div className="mt-4">
         {isLoading ? (
           <Loader size="10" />
-        ) : posts.length ? (
-          posts.map((post, index) => {
-            const isLast = index === posts.length - 1;
+        ) : safePosts.length ? (
+          safePosts.map((post, index) => {
+            const isLast = index === safePosts.length - 1;
 
             return (
               <div key={post._id} ref={isLast ? lastPostRef : null}>

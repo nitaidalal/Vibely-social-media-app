@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { setPosts } from '../redux/postSlice';
+import { addPost } from '../redux/postSlice';
 import { setVibes } from '../redux/vibeSlice';
 import { setStories } from '../redux/storySlice';
 import { setUserData } from '../redux/userSlice';
@@ -14,7 +14,6 @@ import { setUserData } from '../redux/userSlice';
 const UploadPost = ({ isStory = false }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { posts } = useSelector((state) => state.post);
   const { vibes } = useSelector((state) => state.vibe);
   const { stories } = useSelector((state) => state.story);
   const { userData } = useSelector((state) => state.user);
@@ -132,7 +131,7 @@ const UploadPost = ({ isStory = false }) => {
       
       // Update Redux store with new content
       if (selectedType === 'post' && response.data.post) {
-        dispatch(setPosts([response.data.post, ...posts]));
+        dispatch(addPost(response.data.post));
       } else if (selectedType === 'vibe' && response.data.vibe) {
         dispatch(setVibes([response.data.vibe, ...vibes]));
       } else if (selectedType === 'story' && response.data.story) {
