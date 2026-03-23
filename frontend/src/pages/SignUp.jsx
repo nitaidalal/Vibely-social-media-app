@@ -133,6 +133,18 @@ const SignUp = () => {
         </div>
 
         <div className="p-6 sm:p-10 lg:p-12  border border-border bg-surface rounded-3xl">
+          <div className="lg:hidden flex items-center justify-center mb-4 border-b border-border pb-4">
+            <div className="flex items-center  gap-0.5">
+              <img
+                src="/logo.png"
+                alt="Logo"
+                className="h-10 w-10 rounded-lg"
+              />
+              <span className="text-primary text-3xl font-extrabold tracking-tight">
+                ibely
+              </span>
+            </div>
+          </div>
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-text-primary">
               Create account

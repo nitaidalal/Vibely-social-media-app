@@ -80,10 +80,20 @@ const SignIn = () => {
         </div>
 
         <div className="p-6 sm:p-10 lg:p-12  border border-border bg-surface rounded-3xl">
+          <div className="lg:hidden flex items-center justify-center mb-4 border-b border-border pb-4">
+            <div className="flex items-center  gap-0.5">
+              <img
+                src="/logo.png"
+                alt="Logo"
+                className="h-10 w-10 rounded-lg"
+              />
+              <span className="text-primary text-3xl font-extrabold tracking-tight">
+                ibely
+              </span>
+            </div>
+          </div>
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-text-primary">
-              Sign in
-            </h1>
+            <h1 className="text-3xl font-bold text-text-primary">Sign in</h1>
             <p className="mt-2 text-sm text-text-secondary">
               Enter your details to continue.
             </p>
@@ -133,7 +143,11 @@ const SignIn = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                  {showPassword ? (
+                    <FaEyeSlash size={18} />
+                  ) : (
+                    <FaEye size={18} />
+                  )}
                 </button>
               </div>
             </div>
