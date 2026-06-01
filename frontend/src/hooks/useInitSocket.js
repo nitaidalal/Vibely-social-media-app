@@ -58,6 +58,21 @@ const useInitSocket = () => {
       dispatch(addComment({ postId, comments }));
     });
 
+    // Post comment reply event
+    socket.on("postCommentReplyAdded", ({ postId, comments }) => {
+      dispatch(addComment({ postId, comments }));
+    });
+
+    // Post comment edited event
+    socket.on("postCommentEdited", ({ postId, comments }) => {
+      dispatch(addComment({ postId, comments }));
+    });
+
+    // Post comment deleted event
+    socket.on("postCommentDeleted", ({ postId, comments }) => {
+      dispatch(addComment({ postId, comments }));
+    });
+
     //Vibe liked event
     socket.on("vibeLiked",({vibeId, likes}) => {
       dispatch(likeVibe({vibeId, likes}));
@@ -66,6 +81,21 @@ const useInitSocket = () => {
     //Vibe commented event
     socket.on("vibeCommented",({vibeId, comments}) => {
       dispatch(addVibeComment({vibeId, comments}));
+    });
+
+    // Vibe comment reply event
+    socket.on("vibeCommentReplyAdded", ({ vibeId, comments }) => {
+      dispatch(addVibeComment({ vibeId, comments }));
+    });
+
+    // Vibe comment edited event
+    socket.on("vibeCommentEdited", ({ vibeId, comments }) => {
+      dispatch(addVibeComment({ vibeId, comments }));
+    });
+
+    // Vibe comment deleted event
+    socket.on("vibeCommentDeleted", ({ vibeId, comments }) => {
+      dispatch(addVibeComment({ vibeId, comments }));
     });
 
     // Real-time notification event
