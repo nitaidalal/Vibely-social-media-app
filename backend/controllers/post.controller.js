@@ -243,7 +243,9 @@ export const commentOnPost = async (req,res) => {
 
         const comment = {
             author: req.userId,
-            content
+            content,
+            parentCommentId: null,
+            level: 0
         };
         post.comments.push(comment);
         await post.save();
@@ -308,7 +310,169 @@ export const savedPost = async (req,res) => {
         return res.status(500).json({message:"Save Post error", error} );
     }
 }
+// Helper function to get comment depth
+const getCommentDepth = (commentId, comments) => {
+    const comment = comments.find(c => c._id.toString() === commentId.toString());
+    if (!comment || !comment.parentCommentId) return 0;
+    
+    let depth = 0;
+    let currentParentId = comment.parentCommentId;
+    
+    while (currentParentId) {
+        const parentComment = comments.find(c => c._id.toString() === currentParentId.toString());
+        if (!parentComment) break;
+        depth++;
+        currentParentId = parentComment.parentCommentId;
+    }
+    
+    return depth;
+};
 
+export const replyToComment = async (req, res) => {
+    try {
+        const { content } = req.body;
+        const { postId, commentId } = req.params;
+        
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+        
+        // Check if parent comment exists
+        const parentComment = post.comments.find(c => c._id.toString() === commentId);
+        if (!parentComment) {
+            return res.status(404).json({ message: "Comment not found" });
+        }
+        
+        // Check depth - max level is 2 (comment -> reply -> nested reply)
+        const depth = getCommentDepth(commentId, post.comments);
+        if (depth >= 2) {
+            return res.status(400).json({ message: "Maximum nesting level reached (2 levels)" });
+        }
+        
+        const reply = {
+            author: req.userId,
+            content,
+            parentCommentId: commentId,
+            level: parentComment.level + 1
+        };
+        
+        post.comments.push(reply);
+        await post.save();
+        await post.populate([
+            { path: "author", select: "name username profileImage" },
+            { path: "comments.author", select: "name username profileImage" }
+        ]);
+        
+        // Real-time update
+        io.emit("postCommentReplyAdded", { postId, comments: post.comments });
+        
+        // Create notification for comment author (not post author)
+        if (parentComment.author._id.toString() !== req.userId) {
+            const notification = await Notification.create({
+                recipient: parentComment.author,
+                sender: req.userId,
+                type: "reply",
+                post: post._id,
+                message: `replied to your comment`
+            });
+            
+            await notification.populate([
+                { path: "sender", select: "name username profileImage" },
+                { path: "recipient", select: "name username profileImage" },
+                { path: "post", select: "mediaUrl caption mediaType" }
+            ]);
+            
+            const receiverSocketId = getReceiverSocketId(parentComment.author._id.toString());
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit("newNotification", notification);
+            }
+        }
+        
+        return res.status(200).json({ message: "Reply added", post });
+    } catch (error) {
+        console.error("Reply to Comment Error:", error);
+        return res.status(500).json({ message: "Failed to add reply", error: error.message });
+    }
+};
+
+export const editComment = async (req, res) => {
+    try {
+        const { content } = req.body;
+        const { postId, commentId } = req.params;
+        
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+        
+        const comment = post.comments.find(c => c._id.toString() === commentId);
+        if (!comment) {
+            return res.status(404).json({ message: "Comment not found" });
+        }
+        
+        // Check authorization - only comment author or post owner can edit
+        if (comment.author._id.toString() !== req.userId && post.author._id.toString() !== req.userId) {
+            return res.status(403).json({ message: "Unauthorized to edit this comment" });
+        }
+        
+        comment.content = content;
+        comment.editedAt = new Date();
+        
+        await post.save();
+        await post.populate([
+            { path: "author", select: "name username profileImage" },
+            { path: "comments.author", select: "name username profileImage" }
+        ]);
+        
+        // Real-time update
+        io.emit("postCommentEdited", { postId, comments: post.comments });
+        
+        return res.status(200).json({ message: "Comment edited", post });
+    } catch (error) {
+        console.error("Edit Comment Error:", error);
+        return res.status(500).json({ message: "Failed to edit comment", error: error.message });
+    }
+};
+
+export const deleteComment = async (req, res) => {
+    try {
+        const { postId, commentId } = req.params;
+        
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+        
+        const comment = post.comments.find(c => c._id.toString() === commentId);
+        if (!comment) {
+            return res.status(404).json({ message: "Comment not found" });
+        }
+        
+        // Check authorization - only comment author or post owner can delete
+        if (comment.author._id.toString() !== req.userId && post.author._id.toString() !== req.userId) {
+            return res.status(403).json({ message: "Unauthorized to delete this comment" });
+        }
+        
+        // Soft delete - mark as deleted
+        comment.isDeleted = true;
+        comment.content = "[deleted]";
+        
+        await post.save();
+        await post.populate([
+            { path: "author", select: "name username profileImage" },
+            { path: "comments.author", select: "name username profileImage" }
+        ]);
+        
+        // Real-time update
+        io.emit("postCommentDeleted", { postId, comments: post.comments });
+        
+        return res.status(200).json({ message: "Comment deleted", post });
+    } catch (error) {
+        console.error("Delete Comment Error:", error);
+        return res.status(500).json({ message: "Failed to delete comment", error: error.message });
+    }
+};
 export const reportPost = async (req, res) => {
     try {
         const postId = req.params.postId;

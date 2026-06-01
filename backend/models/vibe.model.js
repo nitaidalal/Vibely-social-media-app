@@ -22,6 +22,10 @@ const VibeSchema = new Schema({
   ],
   comments: [
     {
+      _id: {
+        type: Schema.Types.ObjectId,
+        auto: true,
+      },
       author:{
         type: Schema.Types.ObjectId,
         ref: "User",
@@ -29,6 +33,23 @@ const VibeSchema = new Schema({
       content:{
         type: String,
         require: true,
+      },
+      parentCommentId: {
+        type: Schema.Types.ObjectId,
+        default: null,
+      },
+      level: {
+        type: Number,
+        default: 0,
+        enum: [0, 1, 2],
+      },
+      editedAt: {
+        type: Date,
+        default: null,
+      },
+      isDeleted: {
+        type: Boolean,
+        default: false,
       },
       createdAt: {
         type: Date,
