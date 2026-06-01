@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import { FiSend } from "react-icons/fi";
 import { FaRegComment } from "react-icons/fa";
 import ShareModal from './ShareModal';
+import CommentThread from './CommentThread';
 import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
 
 const VibeCard = ({
@@ -56,6 +57,9 @@ const VibeCard = ({
       }
     };
   }, [])
+
+  // ✅ Get active comment count (excluding deleted comments)
+  const activeCommentCount = comments.filter(c => !c.isDeleted).length;
 
   useEffect(() => {
     if (videoRef.current) {
@@ -235,7 +239,7 @@ const VibeCard = ({
           >
             <FaRegComment className="text-white text-2xl" />
             <span className="text-white font-semibold">
-              {comments.length > 0 ? comments.length : ""}
+              {activeCommentCount > 0 ? activeCommentCount : ""}
             </span>
           </button>
 
@@ -282,41 +286,23 @@ const VibeCard = ({
 
           {/* Comments List */}
           <div
-            className="flex-1 overflow-y-auto p-4 space-y-4 overscroll-contain "
+            className="flex-1 overflow-y-auto p-4 overscroll-contain "
             onWheel={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
           >
-            {comments.length > 0 ? (
-              comments.map((comment, index) => (
-                <div
-                  key={index}
-                  className="flex gap-3 bg-gray-800  p-3 rounded-lg"
-                >
-                  <div className="h-9 w-9 border-2 border-purple-500 rounded-full">
-                    <img
-                      src={
-                        comment.author?.profileImage || "/default-avatar.png"
-                      }
-                      alt={comment.author?.name}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1 w-full">
-                    <div className="flex justify-between items-center  w-full">
-                      <p className="font-semibold  text-sm">
-                        {comment.author?.name}
-                      </p>
-                      <p className="px-2.5 py-1.5 border border-purple-500 bg-purple-500/15 rounded-full text-gray-400 text-xs">
-                        {moment(comment.createdAt).fromNow()}
-                      </p>
-                    </div>
-                    <p className="text-gray-300 text-sm">{comment.content}</p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-center text-gray-400">No comments yet</p>
-            )}
+            <CommentThread 
+              comments={comments}
+              vibeId={vibe._id}
+              postAuthorId={vibe?.author?._id}
+              isVibe={true}
+              onCommentUpdate={(updatedVibe) => {
+                setComments(updatedVibe.comments);
+                dispatch(addVibeComment({ 
+                  vibeId: vibe._id, 
+                  comments: updatedVibe.comments 
+                }));
+              }}
+            />
           </div>
 
           {/* Comment Input */}

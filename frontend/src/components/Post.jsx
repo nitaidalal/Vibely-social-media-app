@@ -23,6 +23,7 @@ import { MdInfo, MdReport } from 'react-icons/md'
 import { MdReportProblem } from 'react-icons/md'
 import ReportPost from './report/ReportPost'
 import ShareModal from './ShareModal'
+import CommentThread from './CommentThread'
 
 
 const Post = ({ post }) => {
@@ -79,6 +80,9 @@ const Post = ({ post }) => {
       setIsSaved(userData?.savedPosts?.includes(post._id));
     }
   }, [post, userData]);
+
+  // ✅ Get active comment count (excluding deleted comments)
+  const activeCommentCount = comments.filter(c => !c.isDeleted).length;
 
   // Lock body scroll when  modal is open
   useEffect(() => {
@@ -318,7 +322,7 @@ const Post = ({ post }) => {
                 <FaRegComment className="text-xl text-blue-500 transition-colors" />
               </button>
               <p className="font-bold text-sm text-text-primary">
-                {comments.length > 0 ? comments.length : ""}
+                {activeCommentCount > 0 ? activeCommentCount : ""}
               </p>
             </div>
             <button
@@ -348,12 +352,12 @@ const Post = ({ post }) => {
             <span className="text-sm text-text-secondary">{post.caption}</span>
           </div>
         )}
-        {comments && comments.length > 0 && (
+        {comments && activeCommentCount > 0 && (
           <button
             onClick={() => setShowComments(!showComments)}
             className="text-text-muted text-sm mb-2 hover:text-text-primary font-semibold transition-colors"
           >
-            View all {comments.length} comments
+            View all {activeCommentCount} comments
           </button>
         )}
 
@@ -395,50 +399,20 @@ const Post = ({ post }) => {
             </div>
 
             {/* Comments List */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-bg/95">
-              {comments.length > 0 ? (
-                comments.map((comment, index) => (
-                  <div
-                    key={index}
-                    className="flex gap-3 p-3 rounded-xl transition-colors bg-purple-500/10 hover:bg-purple-500/15"
-                  >
-                    <div className="h-9 w-9 rounded-full overflow-hidden border-2 border-purple-500 shrink-0">
-                      {comment.author?.profileImage ? (
-                        <img
-                          src={comment.author.profileImage}
-                          alt={comment.author?.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                          <FaUserLarge className="text-white text-xs" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 justify-between mb-1">
-                        <p className="font-bold text-sm text-text-primary mb-1">
-                          {comment.author?.username || comment.author?.name}
-                        </p>
-                        <p className="px-2.5 py-1.5 border border-purple-500/50 rounded-full text-text-muted text-xs bg-purple-500/10">
-                          {moment(comment.createdAt).fromNow()}
-                        </p>
-                      </div>
-                      <p className="text-text-secondary text-sm leading-relaxed">
-                        {comment.content}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-20">
-                  <FaRegComment className="text-6xl text-blue-500 mx-auto mb-4" />
-                  <p className="text-text-primary text-lg">No comments yet</p>
-                  <p className="text-text-muted text-sm mt-2">
-                    Be the first to comment!
-                  </p>
-                </div>
-              )}
+            <div className="flex-1 overflow-y-auto p-5 bg-bg/95">
+              <CommentThread 
+                comments={comments}
+                postId={post._id}
+                postAuthorId={post?.author?._id}
+                isVibe={false}
+                onCommentUpdate={(updatedPost) => {
+                  setComments(updatedPost.comments);
+                  dispatch(addComment({ 
+                    postId: post._id, 
+                    comments: updatedPost.comments 
+                  }));
+                }}
+              />
             </div>
 
             {/* Comment Input */}
