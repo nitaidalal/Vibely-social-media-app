@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import axios from 'axios';
+import axiosInstance from '../api/api';
 import toast from 'react-hot-toast';
 import { useSelector } from 'react-redux';
 import { LuSearch, LuX } from 'react-icons/lu';
@@ -8,7 +8,6 @@ import { FiSend } from 'react-icons/fi';
 import { FaUserLarge } from 'react-icons/fa6';
 
 
-const BASE = import.meta.env.VITE_BACKEND_URL;
 
 const ShareModal = ({ isOpen, onClose, contentType, contentId, profileLink }) => {
   const [composeSearch, setComposeSearch] = useState('');
@@ -21,8 +20,8 @@ const ShareModal = ({ isOpen, onClose, contentType, contentId, profileLink }) =>
   const handleShare = async (receiverId) => {
     try {
       setSendingTo(receiverId);
-      await axios.post(
-        `${BASE}/messages/share/${receiverId}`,
+      await axiosInstance.post(
+        `/messages/share/${receiverId}`,
         { contentType, contentId },
         { withCredentials: true },
       );
@@ -54,8 +53,8 @@ const ShareModal = ({ isOpen, onClose, contentType, contentId, profileLink }) =>
     setComposeLoading(true);
     const timeout = setTimeout(async () => {
       try {
-        const { data } = await axios.get(
-          `${BASE}/user/search?query=${composeSearch}`,
+        const { data } = await axiosInstance.get(
+          `/user/search?query=${composeSearch}`,
           { withCredentials: true },
         );
         setComposeResults(data.users || data || []);

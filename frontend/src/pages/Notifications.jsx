@@ -15,7 +15,7 @@ import {
   clearAllNotifications,
 } from "../redux/notificationSlice";
 import toast from "react-hot-toast";
-import axios from "axios";
+import axiosInstance from "../api/api";
 import Loader from "../components/Loader";
 
 
@@ -49,8 +49,8 @@ const Notifications = () => {
   // ── Mark all as read ─────────────────────────
   const handleMarkAllRead = async () => {
     try {
-      await axios.put(
-        `${import.meta.env.VITE_BACKEND_URL}/notifications/mark-all-read`,
+      await axiosInstance.put(
+        "/notifications/mark-all-read",
         {},
         { withCredentials: true }
       );
@@ -63,8 +63,8 @@ const Notifications = () => {
   // ── Mark one as read ─────────────────────────
   const handleMarkOneRead = async (notificationId) => {
     try {
-      await axios.put(
-        `${import.meta.env.VITE_BACKEND_URL}/notifications/${notificationId}/read`,
+      await axiosInstance.put(
+        `/notifications/${notificationId}/read`,
         {},
         { withCredentials: true }
       );
@@ -78,8 +78,8 @@ const Notifications = () => {
   const handleDelete = async (e, notificationId) => {
     e.stopPropagation();
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}/notifications/${notificationId}`,
+      await axiosInstance.delete(
+        `/notifications/${notificationId}`,
         { withCredentials: true }
       );
       dispatch(removeNotification(notificationId));
@@ -91,8 +91,8 @@ const Notifications = () => {
   // ── Clear all ────────────────────────────────
   const handleClearAll = async () => {
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}/notifications/all`,
+      await axiosInstance.delete(
+        "/notifications/all",
         { withCredentials: true }
       );
       dispatch(clearAllNotifications());

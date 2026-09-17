@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import axios from 'axios';
+import axiosInstance from '../api/api';
 import { setNotifications,setLoading } from '../redux/notificationSlice';
 
 // Fetches notifications on app load so the bell icon shows
@@ -16,8 +16,8 @@ const useGetNotifications = () => {
         const fetchNotifications = async () => {
             try {
                 dispatch(setLoading(true));
-                const res = await axios.get(
-                    `${import.meta.env.VITE_BACKEND_URL}/notifications`,
+                const res = await axiosInstance.get(
+                    '/notifications',
                     { withCredentials: true }
                 );
                 dispatch(setNotifications({

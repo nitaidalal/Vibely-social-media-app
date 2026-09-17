@@ -2,7 +2,7 @@ import { FaUserLarge } from "react-icons/fa6";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { clearUserData } from "../redux/userSlice";
-import axios from "axios";
+import axiosInstance from "../api/api";
 import { useNavigate } from "react-router-dom";
 import Follow from "./Resuable/Follow";
 import Loader from "./Loader";
@@ -16,8 +16,8 @@ const RightHome = () => {
   const handleLogout = async () => {
     try {
       // pass withCredentials in the axios config (3rd arg) so browser sends cookies
-      await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/auth/signout`,
+      await axiosInstance.post(
+        "/auth/signout",
         {},
         { withCredentials: true },
       );

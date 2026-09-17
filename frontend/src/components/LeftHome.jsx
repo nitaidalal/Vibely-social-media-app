@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toggleTheme } from "../redux/themeSlice";
 import { clearUserData } from "../redux/userSlice";
-import axios from "axios";
+import axiosInstance from "../api/api";
 
 // Icons
 import { GoHomeFill, GoHome } from "react-icons/go";
@@ -42,8 +42,8 @@ const LeftHome = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/auth/signout`,
+      await axiosInstance.post(
+        "/auth/signout",
         {},
         { withCredentials: true }
       );

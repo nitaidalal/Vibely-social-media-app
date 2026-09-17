@@ -1,7 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
+import axiosInstance from "../api/api";
 
-const BASE = import.meta.env.VITE_BACKEND_URL;
 
 const initialState = {
   posts: [],
@@ -104,7 +103,7 @@ export const fetchPostsIfNeeded =
     try {
       if (!silent) dispatch(setLoading(true));
 
-      const { data } = await axios.get(`${BASE}/posts/getAllPosts`, {
+      const { data } = await axiosInstance.get("/posts/getAllPosts", {
         params: { limit: 10 },
         withCredentials: true,
       });
@@ -132,7 +131,7 @@ export const fetchMorePosts =
     try {
       dispatch(setFetchingMore(true));
 
-      const { data } = await axios.get(`${BASE}/posts/getAllPosts`, {
+      const { data } = await axiosInstance.get("/posts/getAllPosts", {
         params: {
           limit,
           cursor: post.nextCursor,

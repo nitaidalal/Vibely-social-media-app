@@ -3,7 +3,7 @@ import { FaHeart, FaRegHeart, FaPlay } from 'react-icons/fa';
 import { HiVolumeUp, HiVolumeOff } from 'react-icons/hi';
 import { useSelector, useDispatch } from 'react-redux';
 import { likeVibe, addVibeComment } from '../redux/vibeSlice';
-import axios from 'axios';
+import axiosInstance from '../api/api';
 import toast from 'react-hot-toast';
 import { FiSend } from "react-icons/fi";
 import { FaRegComment } from "react-icons/fa";
@@ -69,8 +69,8 @@ const VibeCard = ({
   const handleLike = async () =>{
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/vibes/like/${vibe._id}`,
+      const response = await axiosInstance.post(
+        `/vibes/like/${vibe._id}`,
         {},
         { withCredentials: true }
       );
@@ -104,8 +104,8 @@ const VibeCard = ({
     if (!comment.trim()) return;
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/vibes/comment/${vibe._id}`,
+      const response = await axiosInstance.post(
+        `/vibes/comment/${vibe._id}`,
         { content: comment },
         { withCredentials: true }
       );

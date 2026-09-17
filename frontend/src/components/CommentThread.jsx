@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
+import axiosInstance from "../api/api";
 import { FaUserLarge } from "react-icons/fa6";
 import { MdEdit, MdDelete } from "react-icons/md";
 import toast from "react-hot-toast";
@@ -367,9 +367,9 @@ const CommentThread = ({
     try {
       setLoading(true);
       const endpoint = isVibe
-        ? `${import.meta.env.VITE_BACKEND_URL}/vibes/comment/${vibeId}/reply/${replyingToId}`
-        : `${import.meta.env.VITE_BACKEND_URL}/posts/comment/${postId}/reply/${replyingToId}`;
-      const response = await axios.post(
+        ? `/vibes/comment/${vibeId}/reply/${replyingToId}`
+        : `/posts/comment/${postId}/reply/${replyingToId}`;
+      const response = await axiosInstance.post(
         endpoint,
         { content: replyContent },
         { withCredentials: true },
@@ -391,9 +391,9 @@ const CommentThread = ({
     try {
       setLoading(true);
       const endpoint = isVibe
-        ? `${import.meta.env.VITE_BACKEND_URL}/vibes/comment/${vibeId}/${commentId}`
-        : `${import.meta.env.VITE_BACKEND_URL}/posts/comment/${postId}/${commentId}`;
-      const response = await axios.patch(
+        ? `/vibes/comment/${vibeId}/${commentId}`
+        : `/posts/comment/${postId}/${commentId}`;
+      const response = await axiosInstance.patch(
         endpoint,
         { content: editContent },
         { withCredentials: true },
@@ -419,9 +419,9 @@ const CommentThread = ({
     try {
       setLoading(true);
       const endpoint = isVibe
-        ? `${import.meta.env.VITE_BACKEND_URL}/vibes/comment/${vibeId}/${commentId}`
-        : `${import.meta.env.VITE_BACKEND_URL}/posts/comment/${postId}/${commentId}`;
-      const response = await axios.delete(endpoint, { withCredentials: true });
+        ? `/vibes/comment/${vibeId}/${commentId}`
+        : `/posts/comment/${postId}/${commentId}`;
+      const response = await axiosInstance.delete(endpoint, { withCredentials: true });
       if (onCommentUpdate)
         onCommentUpdate(response.data[isVibe ? "vibe" : "post"]);
       toast.success("Comment deleted");

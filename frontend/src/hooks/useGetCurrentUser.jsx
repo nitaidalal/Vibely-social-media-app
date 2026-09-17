@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import axios from 'axios';
+import axiosInstance from '../api/api';
 import { setFollowing, setUserData ,setLoading} from '../redux/userSlice';
 
 const useGetCurrentUser = () => {
@@ -14,8 +14,8 @@ const useGetCurrentUser = () => {
 
       try {
         dispatch(setLoading(true));
-        const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/user/current`,
+        const response = await axiosInstance.get(
+          '/user/current',
           { withCredentials: true }
         );
         

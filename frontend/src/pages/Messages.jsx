@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../api/api";
 import { getSocket } from "../socket/socket";
 import { BsThreeDots } from "react-icons/bs";
 import {
@@ -31,7 +31,6 @@ import { AiOutlineDelete } from "react-icons/ai";
 import { BsCheckAll, BsCheck, BsPlus } from "react-icons/bs";
 import ChatSkeleton from "../skeletons/ChatSkeleton";
 
-const BASE = import.meta.env.VITE_BACKEND_URL;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -344,8 +343,8 @@ const Messages = () => {
     const timeout = setTimeout(async () => {
       setComposeLoading(true);
       try {
-        const { data } = await axios.get(
-          `${BASE}/user/search?query=${composeSearch}`,
+        const { data } = await axiosInstance.get(
+          `/user/search?query=${composeSearch}`,
           {
             withCredentials: true,
           },
@@ -371,7 +370,7 @@ const Messages = () => {
   const fetchConversations = useCallback(async () => {
     try {
       dispatch(setLoading(true));
-      const { data } = await axios.get(`${BASE}/messages/conversations`, {
+      const { data } = await axiosInstance.get(`/messages/conversations`, {
         withCredentials: true,
       });
       dispatch(setConversations(data));
@@ -412,8 +411,8 @@ const Messages = () => {
     const fetchMessages = async () => {
       try {
         setMessageLoading(true);
-        const { data } = await axios.get(
-          `${BASE}/messages/${selectedConversation._id}`,
+        const { data } = await axiosInstance.get(
+          `/messages/${selectedConversation._id}`,
           {
             withCredentials: true,
           },
@@ -486,8 +485,8 @@ const Messages = () => {
       if (text.trim()) formData.append("content", text.trim());
       if (imageFile) formData.append("image", imageFile);
 
-      const { data } = await axios.post(
-        `${BASE}/messages/send/${selectedConversation.participant._id}`,
+      const { data } = await axiosInstance.post(
+        `/messages/send/${selectedConversation.participant._id}`,
         formData,
         { withCredentials: true },
       );
@@ -526,7 +525,7 @@ const Messages = () => {
 
   const handleDelete = async (messageId) => {
     try {
-      await axios.delete(`${BASE}/messages/${messageId}`, {
+      await axiosInstance.delete(`/messages/${messageId}`, {
         withCredentials: true,
       });
       dispatch(setMessages(messages.filter((m) => m._id !== messageId)));
@@ -545,7 +544,7 @@ const Messages = () => {
   const handleDeleteConversation = async (e, conversationId) => {
     e.stopPropagation();
     try {
-      await axios.delete(`${BASE}/messages/conversations/${conversationId}`, {
+      await axiosInstance.delete(`/messages/conversations/${conversationId}`, {
         withCredentials: true,
       });
       dispatch(removeConversation(conversationId));

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 import { MdReportProblem } from 'react-icons/md'
-import axios from 'axios'
+import axiosInstance from '../../api/api'
 import toast from 'react-hot-toast'
 
 const REASONS = [
@@ -28,8 +28,8 @@ const ReportPost = ({ postId, onClose }) => {
     }
     setLoading(true)
     try {
-      await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/posts/report/${postId}`,
+      await axiosInstance.post(
+        `/posts/report/${postId}`,
         { reason: form.reason, description: form.description },
         { withCredentials: true }
       )

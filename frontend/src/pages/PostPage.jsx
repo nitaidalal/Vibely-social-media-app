@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import axiosInstance from '../api/api'
 import toast from 'react-hot-toast'
 import { LuArrowLeft } from 'react-icons/lu'
 import Post from '../components/Post'
@@ -12,8 +12,8 @@ const PostPage = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    axios
-      .get(`${import.meta.env.VITE_BACKEND_URL}/posts/${postId}`, { withCredentials: true })
+    axiosInstance
+      .get(`/posts/${postId}`, { withCredentials: true })
       .then(({ data }) => setPost(data.post))
       .catch(() => toast.error('Post not found'))
       .finally(() => setLoading(false))

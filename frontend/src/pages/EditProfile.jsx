@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { setUserData } from '../redux/userSlice'
-import axios from 'axios'
+import axiosInstance from '../api/api'
 import { toast } from 'react-hot-toast'
 import { FaUserLarge, FaCamera } from "react-icons/fa6"
 import { IoMdClose } from "react-icons/io"
@@ -64,8 +64,8 @@ const EditProfile = () => {
       formDataToSend.append('gender', formData.gender)
       if (profileImage) formDataToSend.append('profileImage', profileImage)
 
-      const response = await axios.put(
-        `${import.meta.env.VITE_BACKEND_URL}/user/update-profile`,
+      const response = await axiosInstance.put(
+        '/user/update-profile',
         formDataToSend,
         {
           withCredentials: true,

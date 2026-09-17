@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import axios from 'axios'
+import axiosInstance from '../../api/api'
 import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
@@ -26,8 +26,8 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
 
     try {
       setLoading(true)
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/user/change-password`,
+      const response = await axiosInstance.post(
+        "/user/change-password",
         { currentPassword, newPassword },
         { withCredentials: true }
       )

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import axios from 'axios'
+import axiosInstance from '../api/api'
 import { IoSearchOutline, IoCloseCircle, IoArrowBackOutline } from 'react-icons/io5'
 import { FaUserLarge } from 'react-icons/fa6'
 import Follow from '../components/Resuable/Follow'
@@ -42,8 +42,8 @@ const Search = () => {
     try {
       setLoading(true)
       setSearched(true)
-      const res = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/user/search/${encodeURIComponent(q)}`,
+      const res = await axiosInstance.post(
+        `/user/search/${encodeURIComponent(q)}`,
         {},
         { withCredentials: true }
       )

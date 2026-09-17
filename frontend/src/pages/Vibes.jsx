@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../api/api';
 import VibeCard from '../components/VibeCard';
 import { IoArrowBack } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
@@ -16,8 +16,8 @@ const Vibes = () => {
   const getAllVibes = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/vibes/getAllVibes`,
+      const response = await axiosInstance.get(
+        '/vibes/getAllVibes',
         {
           withCredentials: true,
         }

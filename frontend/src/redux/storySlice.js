@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
+import axiosInstance from "../api/api";
 
 const storySlice = createSlice({
     name: 'story',
@@ -57,7 +57,7 @@ export const fetchStoriesIfNeeded = ({ force = false, ttlMs = 120000, silent = f
         if (!silent) {
             dispatch(setStoriesLoading(true));
         }
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/story/getAllStories`, {
+        const response = await axiosInstance.get("/story/getAllStories", {
             withCredentials: true,
         });
         dispatch(setStories(response.data.stories || []));

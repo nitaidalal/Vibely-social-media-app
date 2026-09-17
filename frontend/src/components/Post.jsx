@@ -10,7 +10,7 @@ import { BsBookmarkFill } from "react-icons/bs"
 import { BsThreeDots } from "react-icons/bs"
 import { useDispatch, useSelector } from 'react-redux'
 import { likePost, addComment, removePost } from '../redux/postSlice'
-import axios from 'axios'
+import axiosInstance from '../api/api'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 import Follow from './Resuable/Follow'
@@ -98,8 +98,8 @@ const Post = ({ post }) => {
 
   const handleLike = async () => {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/posts/like/${post._id}`,
+      const response = await axiosInstance.post(
+        `/posts/like/${post._id}`,
         {},
         { withCredentials: true }
       );
@@ -120,8 +120,8 @@ const Post = ({ post }) => {
 
   const handleSave = async () => {
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/posts/saved/${post._id}`,
+      const response = await axiosInstance.get(
+        `/posts/saved/${post._id}`,
         { withCredentials: true }
       );
 
@@ -142,8 +142,8 @@ const Post = ({ post }) => {
     // Like the post if not already liked
     if (!isLiked) {
       try {
-        const response = await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}/posts/like/${post._id}`,
+        const response = await axiosInstance.post(
+          `/posts/like/${post._id}`,
           {},
           { withCredentials: true }
         );
@@ -166,8 +166,8 @@ const Post = ({ post }) => {
     if (!comment.trim()) return;
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/posts/comment/${post._id}`,
+      const response = await axiosInstance.post(
+        `/posts/comment/${post._id}`,
         { content: comment },
         { withCredentials: true }
       );
@@ -199,8 +199,8 @@ const Post = ({ post }) => {
   const handleDeletePost = async (postId) => {
     try {
       console.log("Attempting to delete post with ID:", postId);
-      const response = await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}/posts/delete/${postId}`,
+      const response = await axiosInstance.delete(
+        `/posts/delete/${postId}`,
         { withCredentials: true }
       );
       

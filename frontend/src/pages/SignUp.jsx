@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import toast from 'react-hot-toast';
 import { FaEye, FaEyeSlash } from 'react-icons/fa'; 
-import axios from 'axios';
+import axiosInstance from '../api/api';
 import { ClipLoader } from "react-spinners";
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
@@ -91,7 +91,7 @@ const SignUp = () => {
     }
     try {
       setLoading(true);
-      let response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/signup`, formData,{
+      let response = await axiosInstance.post('/auth/signup', formData,{
         withCredentials: true
       });
       // Store only user data, NOT token (token is in httpOnly cookie)

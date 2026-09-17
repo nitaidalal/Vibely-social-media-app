@@ -3,7 +3,7 @@ import { MdPhotoLibrary, MdClose, MdArrowBack } from 'react-icons/md';
 import { FaImages, FaClock, FaFire } from 'react-icons/fa';
 import { ClipLoader } from 'react-spinners';
 import toast from 'react-hot-toast';
-import axios from 'axios';
+import axiosInstance from '../api/api';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { addPost } from '../redux/postSlice';
@@ -121,8 +121,8 @@ const UploadPost = ({ isStory = false }) => {
                        selectedType === 'story' ? '/story/upload' : 
                        '/vibes/upload';
       
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}${endpoint}`,
+      const response = await axiosInstance.post(
+        endpoint,
         formData,
         {
           withCredentials: true,

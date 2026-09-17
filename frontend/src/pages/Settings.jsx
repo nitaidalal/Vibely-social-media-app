@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import axios from 'axios'
+import axiosInstance from '../api/api'
 import { useDispatch, useSelector } from 'react-redux'
 import { clearUserData } from '../redux/userSlice'
 import { toast } from 'react-hot-toast'
@@ -32,8 +32,8 @@ const Settings = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/auth/signout`,
+      await axiosInstance.post(
+        '/auth/signout',
         {},
         { withCredentials: true }
       )

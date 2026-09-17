@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import axios from 'axios';
+import axiosInstance from '../api/api';
 import { useDispatch, useSelector } from 'react-redux';
 import { setProfileData } from '../redux/userSlice';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -36,8 +36,8 @@ const Profile = () => {
   const handleProfile = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/user/profile/${username}`,
+      const response = await axiosInstance.get(
+        `/user/profile/${username}`,
         { withCredentials: true },
       );
 

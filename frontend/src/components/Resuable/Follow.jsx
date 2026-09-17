@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import axios from 'axios'
+import axiosInstance from '../../api/api'
 import toast from 'react-hot-toast'
 import {  toggleFollow } from '../../redux/userSlice'
 
@@ -16,8 +16,8 @@ const Follow = ({ userId, location = "", onFollowChange }) => {
     
     try {
       setIsLoading(true);
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/user/follow/${userId}`,
+      const response = await axiosInstance.post(
+        `/user/follow/${userId}`,
         {},
         { withCredentials: true }
       );

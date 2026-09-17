@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import axiosInstance from '../api/api'
 import toast from 'react-hot-toast'
 import { LuArrowLeft } from 'react-icons/lu'
 import VibeCard from '../components/VibeCard'
@@ -15,7 +15,7 @@ const VibePage = () => {
     const fetchVibe = async () => {
       try {
         setLoading(true)
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/vibes/${vibeId}`, { withCredentials: true })
+        const response = await axiosInstance.get(`/vibes/${vibeId}`, { withCredentials: true })
         setVibe(response.data.vibe)
       } catch (error) {
         toast.error(error.response?.data?.message || 'Failed to load vibe')

@@ -1,5 +1,5 @@
 import React from 'react'
-import axios from 'axios';
+import axiosInstance from '../api/api';
 import {useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSuggestedUsers } from '../redux/userSlice';
@@ -10,7 +10,7 @@ const getSuggestedUsers = () => {
     useEffect(() => {
         const fetchSuggestedUsers = async () => {
             try {
-                const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/suggested`, {
+                const response = await axiosInstance.get('/user/suggested', {
                     withCredentials: true,
                 });
                 

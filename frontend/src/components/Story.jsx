@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../api/api';
 import { IoClose, IoChevronBack, IoChevronForward } from 'react-icons/io5';
 import { FaHeart, FaRegHeart, FaTrash } from 'react-icons/fa';
 import { HiDotsVertical } from 'react-icons/hi';
@@ -56,8 +56,8 @@ const Story = () => {
       setLoading(true);
       setProgress(0);
       
-      const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/story/getByUsername/${username}`,
+      const response = await axiosInstance.get(
+        `/story/getByUsername/${username}`,
         { withCredentials: true }
       );
       
@@ -135,8 +135,8 @@ const Story = () => {
   const handleDeleteStory = async () => {
     try {
       
-      await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}/story/delete/${currentStory._id}`,
+      await axiosInstance.delete(
+        `/story/delete/${currentStory._id}`,
         { withCredentials: true }
       );
       

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../api/api";
 import toast from "react-hot-toast";
 import { ClipLoader } from "react-spinners";
 import { useNavigate } from "react-router-dom";
@@ -27,8 +27,8 @@ const ForgotPassword = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/auth/send-otp`,
+      const res = await axiosInstance.post(
+        "/auth/send-otp",
         { email },
       );
       toast.success(res.data.message);
@@ -47,8 +47,8 @@ const ForgotPassword = () => {
 
     try {
       setResendLoading(true);
-      const res = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/auth/send-otp`,
+      const res = await axiosInstance.post(
+        "/auth/send-otp",
         { email },
       );
       toast.success(res.data.message || "OTP resent");
@@ -65,8 +65,8 @@ const ForgotPassword = () => {
     if (!otp) return toast.error("Enter OTP");
 
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/auth/verify-otp`,
+      const res = await axiosInstance.post(
+        "/auth/verify-otp",
         { email, otp },
       );
       toast.success(res.data.message);
@@ -86,8 +86,8 @@ const ForgotPassword = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/auth/reset-password`,
+      const res = await axiosInstance.post(
+        "/auth/reset-password",
         { email, newPassword },
       );
       toast.success(res.data.message);
