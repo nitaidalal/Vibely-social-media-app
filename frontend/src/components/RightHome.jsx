@@ -1,31 +1,14 @@
 import { FaUserLarge } from "react-icons/fa6";
 import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
-import { clearUserData } from "../redux/userSlice";
-import axiosInstance from "../api/api";
 import { useNavigate } from "react-router-dom";
 import Follow from "./Resuable/Follow";
 import Loader from "./Loader";
 
 const RightHome = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const { userData, loading } = useSelector((state) => state.user);
   const { suggestedUsers } = useSelector((state) => state.user);
 
-  const handleLogout = async () => {
-    try {
-      // pass withCredentials in the axios config (3rd arg) so browser sends cookies
-      await axiosInstance.post(
-        "/auth/signout",
-        {},
-        { withCredentials: true },
-      );
-      dispatch(clearUserData());
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
-  };
   return (
     <div className="w-[30%] hidden md:block border-l bg-bg text-text-primary border-border px-4 h-screen overflow-y-auto fixed right-0 top-0">
       
@@ -45,14 +28,6 @@ const RightHome = () => {
         <div>
           <h2 className="md:text-sm lg:text-lg font-semibold">{userData?.name}</h2>
           <p className="text-sm text-gray-400">@{userData?.username}</p>
-        </div>
-        <div className="ml-auto">
-          <button
-            onClick={handleLogout}
-            className="md:px-2 lg:px-3  py-2 bg-rose-500 md:text-xs lg:text-sm text-white cursor-pointer rounded-md"
-          >
-            Log Out
-          </button>
         </div>
       </div>
 
