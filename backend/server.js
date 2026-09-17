@@ -3,13 +3,7 @@ import express from "express";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import connectDb from './config/db.js';
-import authRouter from './routes/auth.routes.js';
-import userRouter from './routes/user.routes.js';
-import postRouter from './routes/post.routes.js';
-import vibeRouter from './routes/vibe.routes.js';
-import storyRouter from './routes/story.routes.js';
-import messageRouter from './routes/message.routes.js';
-import notificationRouter from './routes/notification.routes.js';
+import apiRouter from './routes/index.js';
 import { app, server } from './config/socket.js';
 
 dotenv.config();
@@ -34,17 +28,8 @@ app.get("/", (req, res) => {
   res.send("hello");
 }); 
 
-//routes
-app.use("/api/auth",authRouter);
-app.use("/api/user",userRouter);
-app.use("/api/posts",postRouter); 
-app.use("/api/vibes",vibeRouter);
-app.use("/api/story",storyRouter);
-app.use("/api/messages",messageRouter);
-app.use("/api/notifications",notificationRouter);
-
-
-
+// routes
+app.use("/api", apiRouter);
 
 server.listen(port,()=> {
     connectDb();
