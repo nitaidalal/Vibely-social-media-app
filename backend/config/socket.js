@@ -6,12 +6,9 @@ import Message from "../models/message.model.js";
 const app = express();
 const server = http.createServer(app);
 const allowedOrigins = [
-    "http://localhost:5173",
-    "https://vibely-social-media-app.vercel.app",
-    ...(process.env.FRONTEND_URL
-        ? process.env.FRONTEND_URL.split(",").map((origin) => origin.trim())
-        : []),
-].map((origin) => origin.replace(/\/$/, ""));
+  ...process.env.FRONTEND_URL.split(",").map((origin) => origin.trim().replace(/\/$/, "")),
+  "http://localhost:5173",
+];
 
 const io = new Server(server, {
   cors: {
