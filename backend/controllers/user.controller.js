@@ -76,9 +76,16 @@ export const updateProfile = async (req,res) => {
             ...(hasName && { name: normalizedName }),
             ...(hasUsername && { username: normalizedUsername }),
             ...(hasBio && { bio: normalizedBio }),
-            ...(hasGender && { gender: normalizedGender }),
             ...(profileImageUrl && {profileImage:profileImageUrl})
         }
+        if (hasGender) {
+            if (normalizedGender) {
+                updatedData.gender = normalizedGender;
+            } else {
+                updatedData.$unset = { gender: 1 };
+            }
+        }
+
         const updatedUser = await User.findByIdAndUpdate(userId, updatedData, {new:true}).select("-password");
         if(!updatedUser){
             return res.status(404).json({message:"User not found"});
@@ -148,20 +155,32 @@ export const followUser = async (req, res) => {
 
         if (isAlreadyFollowing) {
           // Unfollow
-          currentUser.following.pull(userIdToFollow);
-          userToFollow.followers.pull(currentUserId);
-          await currentUser.save();
-          await userToFollow.save();
+                    await Promise.all([
+                        User.updateOne(
+                            { _id: currentUserId },
+                            { $pull: { following: userIdToFollow } },
+                        ),
+                        User.updateOne(
+                            { _id: userIdToFollow },
+                            { $pull: { followers: currentUserId } },
+                        ),
+                    ]);
           return res.status(200).json({
             message: "Unfollowed successfully",
             isFollowing: false,
           });
         } else {
           // Follow
-          currentUser.following.push(userIdToFollow);
-          userToFollow.followers.push(currentUserId);
-          await currentUser.save();
-          await userToFollow.save();
+                    await Promise.all([
+                        User.updateOne(
+                            { _id: currentUserId },
+                            { $addToSet: { following: userIdToFollow } },
+                        ),
+                        User.updateOne(
+                            { _id: userIdToFollow },
+                            { $addToSet: { followers: currentUserId } },
+                        ),
+                    ]);
 
 
           // Create a notification for the followed user
