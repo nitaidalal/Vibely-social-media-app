@@ -31,7 +31,6 @@ const userSlice = createSlice({
     },
     clearUserData: (state) => {
       state.userData = null;
-      // Remove from localStorage
       try {
         localStorage.removeItem("userData");
       } catch (error) {
@@ -40,6 +39,11 @@ const userSlice = createSlice({
     },
     setSuggestedUsers: (state, action) => {
       state.suggestedUsers = action.payload;
+    },
+    removeSuggestedUser: (state, action) => {
+      state.suggestedUsers = state.suggestedUsers.filter(
+        (user) => user._id !== action.payload,
+      );
     },
     setProfileData: (state, action) => {
       state.profileData = action.payload;
@@ -62,5 +66,5 @@ const userSlice = createSlice({
   },
 });
 
-export const {setUserData, clearUserData, setSuggestedUsers, setProfileData, setFollowing, toggleFollow, setLoading} = userSlice.actions;
+export const {setUserData, clearUserData, setSuggestedUsers, removeSuggestedUser, setProfileData, setFollowing, toggleFollow, setLoading} = userSlice.actions;
 export default userSlice.reducer;

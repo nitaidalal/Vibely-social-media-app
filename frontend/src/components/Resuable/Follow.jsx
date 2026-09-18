@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import axiosInstance from '../../api/api'
 import toast from 'react-hot-toast'
-import {  toggleFollow } from '../../redux/userSlice'
+import { removeSuggestedUser, toggleFollow } from '../../redux/userSlice'
 
 const Follow = ({ userId, location = "", onFollowChange }) => {
   const dispatch = useDispatch();
@@ -23,6 +23,9 @@ const Follow = ({ userId, location = "", onFollowChange }) => {
       );
 
       dispatch(toggleFollow(userId));
+      if (response.data.isFollowing) {
+        dispatch(removeSuggestedUser(userId));
+      }
       
       
       toast.success(response.data.message);
