@@ -16,6 +16,7 @@ import { BsBookmark } from "react-icons/bs";
 import Post from '../components/Post';
 import VibeCard from '../components/VibeCard';
 import ShareModal from '../components/ShareModal';
+import FollowListModal from '../components/FollowListModal';
 
 
 const Profile = () => {
@@ -30,6 +31,7 @@ const Profile = () => {
   const selectedItemRef = useRef(null);
   const { profileData, userData } = useSelector((state) => state.user);
   const [showShare, setShowShare] = useState(false);
+  const [followListType, setFollowListType] = useState(null);
 
   const isOwnProfile = userData?.username === username;
 
@@ -126,7 +128,11 @@ const Profile = () => {
                 </p>
                 <p className="text-sm text-gray-400">Posts</p>
               </div>
-              <div className="cursor-pointer">
+              <button
+                type="button"
+                onClick={() => setFollowListType("followers")}
+                className="cursor-pointer"
+              >
                 <p className="text-xl md:text-2xl font-bold">
                   {profileData?.followers?.length || 0}
                 </p>
@@ -135,13 +141,17 @@ const Profile = () => {
                     ? "Follower"
                     : "Followers"}
                 </p>
-              </div>
-              <div className="cursor-pointer">
+              </button>
+              <button
+                type="button"
+                onClick={() => setFollowListType("following")}
+                className="cursor-pointer"
+              >
                 <p className="text-xl md:text-2xl font-bold">
                   {profileData?.following?.length || 0}
                 </p>
                 <p className="text-sm text-gray-400">Following</p>
-              </div>
+              </button>
             </div>
           </div>
 
@@ -416,6 +426,13 @@ const Profile = () => {
           contentId={profileData?._id}
         />
       )}
+
+      <FollowListModal
+        isOpen={followListType !== null}
+        onClose={() => setFollowListType(null)}
+        type={followListType}
+        users={profileData?.[followListType] || []}
+      />
     </div>
   );
 }

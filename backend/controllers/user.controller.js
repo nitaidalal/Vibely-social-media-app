@@ -145,6 +145,8 @@ export const getProfile = async(req,res) => {
             username: { $regex: `^${escapedUsername}$`, $options: "i" },
         })
             .select("-password")
+            .populate("followers", "name username profileImage")
+            .populate("following", "name username profileImage")
             .populate({
                 path: "posts",
               options: { sort: { createdAt: -1, _id: -1 } },
