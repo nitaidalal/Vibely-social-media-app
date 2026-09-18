@@ -154,7 +154,7 @@ const UserCard = ({ user, navigate }) => {
     <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-surface transition-colors duration-150 cursor-pointer group">
       {/* Avatar */}
       <div
-        onClick={() => navigate(`/profile/${user.username}`)}
+        onClick={() => navigate(`/profile/${encodeURIComponent(user.username)}`)}
         className="h-12 w-12 rounded-full overflow-hidden border border-border shrink-0 bg-surface flex items-center justify-center"
       >
         {user.profileImage ? (
@@ -171,7 +171,7 @@ const UserCard = ({ user, navigate }) => {
       {/* Info */}
       <div
         className="flex-1 min-w-0"
-        onClick={() => navigate(`/profile/${user.username}`)}
+        onClick={() => navigate(`/profile/${encodeURIComponent(user.username)}`)}
       >
         <p className="text-text-primary font-semibold text-sm truncate group-hover:text-primary transition-colors">
           {user.name}

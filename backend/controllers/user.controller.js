@@ -32,76 +32,118 @@ export const suggestedUsers = async (req,res)=>{
     }
 }
 
+export const updateProfile = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { name, username, bio, gender } = req.body;
 
-export const updateProfile = async (req,res) => {
-    try {
-        const userId = req.userId;
-        const {name,username, bio,gender} = req.body;
+    const updatedData = {};
 
-        const hasName = name !== undefined;
-        const hasUsername = username !== undefined;
-        const hasBio = bio !== undefined;
-        const hasGender = gender !== undefined;
-
-        const normalizedName = hasName ? name.trim() : undefined;
-        const normalizedUsername = hasUsername ? username.trim() : undefined;
-        const normalizedGender = hasGender ? gender.trim() : undefined;
-        const normalizedBio = hasBio ? bio.replace(/\r\n/g, "\n") : undefined; //
-
-        //check if username is taken by other user
-        const existingUser = normalizedUsername
-            ? await User.findOne({ username: normalizedUsername })
-            : null;
-        if(existingUser && existingUser._id.toString() !== userId){
-            return res.status(400).json({success:false, message:"Username is already taken"});
-        }
-
-        let profileImageUrl;
-        if(req.file){
-            const fileBase64 = req.file.buffer.toString("base64");
-            const fileUri = `data:${req.file.mimetype};base64,${fileBase64}`;
-            const uploadResult = await cloudinary.uploader.upload(fileUri, {
-              folder: "vibogram/profiles",
-              resource_type: "image",
-              transformation: [
-                { width: 400, height: 400, crop: "fill", gravity: "face" },
-                { quality: "auto" },
-                { fetch_format: "auto" },
-              ],
-            });
-            profileImageUrl = uploadResult.secure_url;
-        }
-
-        const updatedData = {
-            ...(hasName && { name: normalizedName }),
-            ...(hasUsername && { username: normalizedUsername }),
-            ...(hasBio && { bio: normalizedBio }),
-            ...(profileImageUrl && {profileImage:profileImageUrl})
-        }
-        if (hasGender) {
-            if (normalizedGender) {
-                updatedData.gender = normalizedGender;
-            } else {
-                updatedData.$unset = { gender: 1 };
-            }
-        }
-
-        const updatedUser = await User.findByIdAndUpdate(userId, updatedData, {new:true}).select("-password");
-        if(!updatedUser){
-            return res.status(404).json({message:"User not found"});
-        }
-
-        return res.status(200).json({updatedUser});
-    } catch (error) {
-        console.error("Update Profile Error:", error);
-        return res.status(500).json({message:"Update profile error", error});
+    if (name !== undefined) {
+      updatedData.name = name.trim();
     }
-}
+
+    if (username !== undefined) {
+      const normalizedUsername = username.trim().toLowerCase();
+
+      if (!/^[a-z0-9_]+$/.test(normalizedUsername)) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Username can only contain lowercase letters, numbers and underscores",
+        });
+      }
+
+      const existingUser = await User.findOne({
+        username: normalizedUsername,
+        _id: { $ne: userId },
+      });
+
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: "Username is already taken",
+        });
+      }
+
+      updatedData.username = normalizedUsername;
+    }
+
+    if (bio !== undefined) {
+      updatedData.bio = bio.replace(/\r\n/g, "\n");
+    }
+
+    if (gender !== undefined) {
+      const normalizedGender = gender.trim();
+
+      if (normalizedGender) {
+        updatedData.gender = normalizedGender;
+      } else {
+        updatedData.$unset = {
+          gender: 1,
+        };
+      }
+    }
+
+    if (req.file) {
+      const fileBase64 = req.file.buffer.toString("base64");
+
+      const fileUri = `data:${req.file.mimetype};base64,${fileBase64}`;
+
+      const uploadResult = await cloudinary.uploader.upload(fileUri, {
+        folder: "vibogram/profiles",
+        resource_type: "image",
+        transformation: [
+          {
+            width: 400,
+            height: 400,
+            crop: "fill",
+            gravity: "face",
+          },
+          {
+            quality: "auto",
+          },
+          {
+            fetch_format: "auto",
+          },
+        ],
+      });
+
+      updatedData.profileImage = uploadResult.secure_url;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updatedData, {
+      new: true,
+    }).select("-password");
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      updatedUser,
+    });
+  } catch (error) {
+    console.error("Update Profile Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Update profile error",
+    });
+  }
+};
 
 export const getProfile = async(req,res) => {
     try {
-        const {username} = req.params;
-        const user = await User.findOne({ username })
+        const username = req.params.username.trim();
+        const escapedUsername = username.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+        const user = await User.findOne({
+            username: { $regex: `^${escapedUsername}$`, $options: "i" },
+        })
             .select("-password")
             .populate({
                 path: "posts",
