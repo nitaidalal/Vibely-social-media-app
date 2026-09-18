@@ -147,6 +147,7 @@ export const getProfile = async(req,res) => {
             .select("-password")
             .populate({
                 path: "posts",
+              options: { sort: { createdAt: -1, _id: -1 } },
                 populate: [
                     { path: "author", select: "name username profileImage" },
                     { path: "comments.author", select: "name username profileImage" }
@@ -288,7 +289,7 @@ export const searchUsers = async(req,res) => {
         const {query} = req.params;
         const users = await User.find({
             $or: [
-                { name: { $regex: query, $options: "i" } }, //regex for case-insensitive search in name , options i for case-insensitive
+                { name: { $regex: query, $options: "i" } },
                 { username: { $regex: query, $options: "i" } }
             ]
         }).select("name username profileImage");
