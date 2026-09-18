@@ -157,6 +157,7 @@ export const getProfile = async(req,res) => {
             })
             .populate({
                 path: "savedPosts",
+                options: { sort: { createdAt: -1, _id: -1 } },
                 populate: [
                     { path: "author", select: "name username profileImage" },
                     { path: "comments.author", select: "name username profileImage" }
@@ -164,6 +165,7 @@ export const getProfile = async(req,res) => {
             })
             .populate({
                 path:"vibes",
+                options: { sort: { createdAt: -1, _id: -1 } },
                 populate:[
                     {path:"author",select:"name username profileImage"},
                     {path:"comments.author",select:"name username profileImage" }
