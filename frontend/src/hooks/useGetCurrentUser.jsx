@@ -31,7 +31,7 @@ const useGetCurrentUser = () => {
     };
 
     fetchCurrentUser();
-  }, []); // Run only once on mount
+  }, [userData?._id]);
 
   return null;
 };

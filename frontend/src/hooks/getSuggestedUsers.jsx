@@ -1,13 +1,14 @@
-import React from 'react'
 import axiosInstance from '../api/api';
-import {useEffect } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSuggestedUsers } from '../redux/userSlice';
 
-const getSuggestedUsers = () => {
+const useGetSuggestedUsers = () => {
     const dispatch = useDispatch();
     const {userData} = useSelector((state) => state.user);
     useEffect(() => {
+        if (!userData?._id) return;
+
         const fetchSuggestedUsers = async () => {
             try {
                 const response = await axiosInstance.get('/user/suggested', {
@@ -22,7 +23,7 @@ const getSuggestedUsers = () => {
         };
 
         fetchSuggestedUsers();
-    }, [userData]);
+    }, [userData?._id]);
 };
 
-export default getSuggestedUsers;
+export default useGetSuggestedUsers;
