@@ -162,13 +162,13 @@ const Settings = () => {
             icon={IoInformationCircleOutline}
             title="Terms of Service"
             subtitle="Read our terms"
-            onClick={() => toast("Feature coming soon")}
+            onClick={() => navigate("/terms")}
           />
           <SettingsItem
             icon={MdPrivacyTip}
             title="Privacy Policy"
             subtitle="How we handle your data"
-            onClick={() => toast("Feature coming soon")}
+            onClick={() => navigate("/privacy")}
           />
           
         </SettingsSection>

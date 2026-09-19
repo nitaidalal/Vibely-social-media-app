@@ -17,7 +17,6 @@ import { FaUserLarge } from "react-icons/fa6";
 import { IoSettingsOutline } from "react-icons/io5";
 import { HiOutlineMoon, HiOutlineSun } from "react-icons/hi2";
 import { IoNotificationsOutline, IoNotifications } from "react-icons/io5";
-import { BsBookmark, BsBookmarkFill } from "react-icons/bs";
 import { LuLogOut } from "react-icons/lu";
 import { LuSend } from "react-icons/lu";
 
@@ -130,15 +129,6 @@ const LeftHome = () => {
             </span>
           )}
         </div>
-      ),
-    },
-    {
-      label: "Saved",
-      path: "/saved",
-      icon: isActive("/saved") ? (
-        <BsBookmarkFill className="text-xl" />
-      ) : (
-        <BsBookmark className="text-xl" />
       ),
     },
   ];

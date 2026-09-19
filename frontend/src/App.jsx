@@ -14,13 +14,15 @@ import UploadPost from './pages/UploadPost'
 import Vibes from './pages/Vibes'
 import Settings from './pages/Settings'
 import Story from './components/Story'
-import getSuggestedUsers from './hooks/getSuggestedUsers'
+import useGetSuggestedUsers from './hooks/getSuggestedUsers'
 import Messages from './pages/Messages'
 import useInitSocket from './hooks/useInitSocket'
 import Notifications from './pages/Notifications'
 import useGetNotifications from './hooks/useGetNotifications'
 import PostPage from './pages/PostPage'
 import VibePage from './pages/VibePage'
+import TermsOfService from './pages/TermsOfService'
+import PrivacyPolicy from './pages/PrivacyPolicy'
 import { useEffect } from 'react'
 
 const App = () => {
@@ -33,7 +35,7 @@ const App = () => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
   
-  getSuggestedUsers();
+  useGetSuggestedUsers();
   useGetCurrentUser();
   useInitSocket();
   useGetNotifications();
@@ -116,6 +118,8 @@ const App = () => {
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/post/:postId" element={<PostPage />} />
           <Route path="/vibe/:vibeId" element={<VibePage />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
         </Route>
       </Routes>
     </>
