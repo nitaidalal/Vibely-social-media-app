@@ -8,12 +8,11 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (
-      error.response?.status === 401 &&
-      window.location.pathname !== "/signin" &&
-      window.location.pathname !== "/signup"
-    ) {
-      window.location.assign("/signin");
+    const currentPath = window.location.pathname;
+    const isAuthPage = currentPath === "/signin" || currentPath === "/signup";
+
+    if (error.response?.status === 401 && !isAuthPage) {
+      window.location.replace("/signin");
     }
 
     return Promise.reject(error);
