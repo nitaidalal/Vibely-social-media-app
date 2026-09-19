@@ -4,12 +4,14 @@ import axiosInstance from '../api/api'
 import toast from 'react-hot-toast'
 import { LuArrowLeft } from 'react-icons/lu'
 import VibeCard from '../components/VibeCard'
+import usePageTitle from '../hooks/usePageTitle'
 
 const VibePage = () => {
   const { vibeId } = useParams()
   const navigate = useNavigate()
   const [vibe, setVibe] = useState(null)
   const [loading, setLoading] = useState(true)
+  usePageTitle(`${vibe?.author?.username || 'Vibe'} - Vibely`)
 
   useEffect(() => {
     const fetchVibe = async () => {

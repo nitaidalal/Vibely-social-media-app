@@ -30,6 +30,7 @@ import {
 import { AiOutlineDelete } from "react-icons/ai";
 import { BsCheckAll, BsCheck, BsPlus } from "react-icons/bs";
 import ChatSkeleton from "../skeletons/ChatSkeleton";
+import usePageTitle from "../hooks/usePageTitle";
 
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -289,6 +290,11 @@ const Messages = () => {
     unreadSenders,
   } = useSelector((s) => s.message);
   const { onlineUsers, typingUserId } = useSelector((s) => s.socket);
+  usePageTitle(
+    selectedConversation?.participant?.username
+      ? `Chat with @${selectedConversation.participant.username} - Vibely`
+      : "Messages - Vibely",
+  );
 
   const location = useLocation();
 

@@ -7,8 +7,11 @@ import { toast } from 'react-hot-toast'
 import { FaUserLarge, FaCamera } from "react-icons/fa6"
 import { IoMdClose } from "react-icons/io"
 import Loader from '../components/Loader'
+import usePageTitle from '../hooks/usePageTitle'
 
 const EditProfile = () => {
+  usePageTitle('Edit Profile - Vibely')
+
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { userData } = useSelector((state) => state.user)

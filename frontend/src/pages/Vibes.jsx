@@ -5,8 +5,11 @@ import { IoArrowBack } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { setVibes } from '../redux/vibeSlice';
+import usePageTitle from '../hooks/usePageTitle';
 
 const Vibes = () => {
+  usePageTitle('Vibes - Vibely');
+
   const dispatch = useDispatch();
   const { vibes } = useSelector((state) => state.vibe);
   const [loading, setLoading] = useState(false);

@@ -17,6 +17,7 @@ import {
 import toast from "react-hot-toast";
 import axiosInstance from "../api/api";
 import Loader from "../components/Loader";
+import usePageTitle from "../hooks/usePageTitle";
 
 
 
@@ -39,6 +40,8 @@ const TYPE_META = {
 };
 
 const Notifications = () => {
+  usePageTitle("Notifications - Vibely");
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { notifications, unreadCount, loading } = useSelector(

@@ -4,8 +4,11 @@ import toast from "react-hot-toast";
 import { ClipLoader } from "react-spinners";
 import { useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
+import usePageTitle from "../hooks/usePageTitle";
 
 const ForgotPassword = () => {
+  usePageTitle("Forgot Password - Vibely");
+
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);

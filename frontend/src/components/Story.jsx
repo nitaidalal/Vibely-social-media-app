@@ -9,9 +9,12 @@ import toast from 'react-hot-toast';
 import moment from 'moment';
 import { setStories } from '../redux/storySlice';
 import { setUserData } from '../redux/userSlice';
+import usePageTitle from '../hooks/usePageTitle';
 
 const Story = () => {
   const { username } = useParams();
+  usePageTitle(`${username || 'Story'} - Vibely`);
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { userData } = useSelector((state) => state.user);

@@ -17,6 +17,7 @@ import Post from '../components/Post';
 import VibeCard from '../components/VibeCard';
 import ShareModal from '../components/ShareModal';
 import FollowListModal from '../components/FollowListModal';
+import usePageTitle from '../hooks/usePageTitle';
 
 
 const Profile = () => {
@@ -30,6 +31,7 @@ const Profile = () => {
   const listRef = useRef(null);
   const selectedItemRef = useRef(null);
   const { profileData, userData } = useSelector((state) => state.user);
+  usePageTitle(`${profileData?.username || username || 'Profile'} - Vibely`);
   const [showShare, setShowShare] = useState(false);
   const [followListType, setFollowListType] = useState(null);
 

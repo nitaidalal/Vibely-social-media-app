@@ -10,8 +10,11 @@ import { addPost } from '../redux/postSlice';
 import { setVibes } from '../redux/vibeSlice';
 import { setStories } from '../redux/storySlice';
 import { setUserData } from '../redux/userSlice';
+import usePageTitle from '../hooks/usePageTitle';
 
 const UploadPost = ({ isStory = false }) => {
+  usePageTitle(`${isStory ? 'Create Story' : 'Create'} - Vibely`);
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { vibes } = useSelector((state) => state.vibe);

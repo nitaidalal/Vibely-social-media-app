@@ -6,9 +6,12 @@ import { ClipLoader } from "react-spinners";
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setUserData } from '../redux/userSlice';
+import usePageTitle from '../hooks/usePageTitle';
 
 
 const SignUp = () => {
+  usePageTitle('Sign Up - Vibely');
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({

@@ -4,12 +4,14 @@ import axiosInstance from '../api/api'
 import toast from 'react-hot-toast'
 import { LuArrowLeft } from 'react-icons/lu'
 import Post from '../components/Post'
+import usePageTitle from '../hooks/usePageTitle'
 
 const PostPage = () => {
   const { postId } = useParams()
   const navigate = useNavigate()
   const [post, setPost] = useState(null)
   const [loading, setLoading] = useState(true)
+  usePageTitle(`${post?.author?.username || 'Post'} - Vibely`)
 
   useEffect(() => {
     axiosInstance

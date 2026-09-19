@@ -20,8 +20,11 @@ import SettingsSection from '../components/settings/SettingsSection'
 import SettingsItem from '../components/settings/SettingsItem'
 import LogoutModal from '../components/settings/LogoutModal'
 import ChangePasswordModal from '../components/settings/ChangePasswordModal'
+import usePageTitle from '../hooks/usePageTitle'
 
 const Settings = () => {
+  usePageTitle('Settings - Vibely')
+
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { userData } = useSelector((state) => state.user)

@@ -6,8 +6,11 @@ import { IoSearchOutline, IoCloseCircle, IoArrowBackOutline } from 'react-icons/
 import { FaUserLarge } from 'react-icons/fa6'
 import Follow from '../components/Resuable/Follow'
 import Loader from '../components/Loader'
+import usePageTitle from '../hooks/usePageTitle'
 
 const Search = () => {
+  usePageTitle('Search - Vibely')
+
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
