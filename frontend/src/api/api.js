@@ -5,13 +5,14 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-let isRedirectingToSignIn = false;
-
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 && !isRedirectingToSignIn) {
-      isRedirectingToSignIn = true;
+    if (
+      error.response?.status === 401 &&
+      window.location.pathname !== "/signin" &&
+      window.location.pathname !== "/signup"
+    ) {
       window.location.assign("/signin");
     }
 
