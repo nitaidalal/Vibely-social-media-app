@@ -22,7 +22,7 @@ import useGetNotifications from './hooks/useGetNotifications'
 import PostPage from './pages/PostPage'
 import VibePage from './pages/VibePage'
 import TermsOfService from './pages/TermsOfService'
-import PrivacyPolicy from './pages/PrivacyPolicy'
+import PrivacyPolicy from './pages/Policy'
 import { useEffect } from 'react'
 
 const App = () => {

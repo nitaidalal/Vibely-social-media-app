@@ -8,6 +8,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
+    localStorage.removeItem("userData");
     const currentPath = window.location.pathname;
     const isAuthPage = currentPath === "/signin" || currentPath === "/signup";
 
